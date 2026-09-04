@@ -13,12 +13,16 @@ public static class DependencyInjection
     {
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = configuration.GetConnectionString("Redis") + ",abortConnect=false";
+            var redisConnString = ParseRedisUrl(configuration.GetConnectionString("Redis") ?? string.Empty);
+            options.Configuration = redisConnString.Contains("abortConnect") ? redisConnString : redisConnString + ",abortConnect=false";
         });
 
         // Register IConnectionMultiplexer lazily for atomic operations
         services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp =>
-            StackExchange.Redis.ConnectionMultiplexer.Connect((configuration.GetConnectionString("Redis") ?? "localhost:6379") + ",abortConnect=false"));
+        {
+            var redisConnString = ParseRedisUrl(configuration.GetConnectionString("Redis") ?? "localhost:6379");
+            return StackExchange.Redis.ConnectionMultiplexer.Connect(redisConnString.Contains("abortConnect") ? redisConnString : redisConnString + ",abortConnect=false");
+        });
 
         // Register our custom rate limit service
         services.AddScoped<IAuthRateLimitService, Security.AuthRateLimitService>();
@@ -26,7 +30,8 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), o => o.UseNetTopologySuite());
+            var dbConnString = ParsePostgresUrl(configuration.GetConnectionString("DefaultConnection") ?? string.Empty);
+            options.UseNpgsql(dbConnString, o => o.UseNetTopologySuite());
             options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
             options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
@@ -73,5 +78,55 @@ public static class DependencyInjection
         services.AddHostedService<Preflight.PreflightCheckService>();
 
         return services;
+    }
+
+    private static string ParsePostgresUrl(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString) || !connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
+        var uri = new Uri(connectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var builder = new Npgsql.NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Database = uri.AbsolutePath.TrimStart('/'),
+            Username = userInfo.Length > 0 ? userInfo[0] : "",
+            Password = userInfo.Length > 1 ? userInfo[1] : "",
+            SslMode = Npgsql.SslMode.Prefer
+        };
+        return builder.ToString();
+    }
+
+    private static string ParseRedisUrl(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString) || !connectionString.StartsWith("redis://", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
+        var uri = new Uri(connectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo.Length > 1 ? userInfo[0] : "";
+        var password = userInfo.Length > 1 ? userInfo[1] : (userInfo.Length == 1 && !string.IsNullOrEmpty(userInfo[0]) ? userInfo[0] : "");
+
+        var options = new StackExchange.Redis.ConfigurationOptions
+        {
+            EndPoints = { { uri.Host, uri.IsDefaultPort ? 6379 : uri.Port } },
+            User = username,
+            Password = password,
+            AbortOnConnectFail = false
+        };
+
+        var path = uri.AbsolutePath.TrimStart('/');
+        if (int.TryParse(path, out int defaultDatabase))
+        {
+            options.DefaultDatabase = defaultDatabase;
+        }
+
+        return options.ToString();
     }
 }
