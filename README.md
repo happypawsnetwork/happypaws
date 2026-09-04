@@ -162,6 +162,7 @@ Configure these repository secrets and variables under **Settings** -> **Secrets
 - `ANDROID_KEYSTORE_PASSWORD`: Master password for the Android release keystore.
 - `ANDROID_KEY_ALIAS`: Alias name defined inside the Android release keystore.
 - `ANDROID_KEY_PASSWORD`: Password for the Android release signing key.
+- `COOLIFY_API_TOKEN`: API token generated in the Coolify dashboard under Keys and tokens. Required by Coolify to authorize deployment requests to `/api/v1/deploy`.
 - `COOLIFY_API_WEBHOOK`: Deploy webhook URL from the Coolify API application to trigger rolling updates.
 - `COOLIFY_WEB_WEBHOOK`: Deploy webhook URL from the Coolify web application to trigger rolling updates.
 - `GOOGLE_MAPS_API_KEY`: API key for Google Maps Platform, used by both mobile and web builds for map rendering and address autocompletion.
@@ -176,6 +177,21 @@ Configure these repository secrets and variables under **Settings** -> **Secrets
 #### Variables
 - `API_BASE_URL`: Public endpoint for the API (`https://api.happypawsnetwork.com`).
 - `APP_URL`: Public endpoint for the web frontend (`https://happypawsnetwork.com`).
+
+### Environment variables: build time versus runtime
+
+Environment variables are separated based on whether client-side bundle inlining or server-side secrecy is required:
+
+#### Build-time variables (baked into images via GitHub Actions)
+Only client-side public variables for the web and mobile applications are baked into build artifacts:
+- `NEXT_PUBLIC_API_URL`: The public API endpoint inlined into browser bundles during `next build`.
+- `NEXT_PUBLIC_APP_URL`: The canonical web URL inlined into browser bundles during `next build`.
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`: Inlined into Google Maps client components during `next build` and compiled into the mobile release APK.
+
+#### Runtime variables (configured in Coolify)
+All server-side settings, private credentials, and database secrets remain exclusively in Coolify. They are never baked into Docker images, preventing credential leaks and allowing secret rotation without rebuilding images:
+- **API application**: Database connection strings (`ConnectionStrings__Database`), cache connection strings (`ConnectionStrings__Cache`), JWT signing secrets (`Jwt__SecretKey`), Cloudflare R2 / MinIO storage credentials (`Storage__*`), and Gemini API keys (`Gemini__ApiKey`).
+- **Web application**: Server-to-API private routing URL (`API_URL`) for server actions and Node.js server container settings (`PORT`, `NODE_ENV`).
 
 ### Coolify application configuration
 
