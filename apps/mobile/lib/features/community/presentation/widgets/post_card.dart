@@ -117,7 +117,7 @@ class PostCard extends StatelessWidget {
           width: 24,
           height: 24,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _buildFallbackAvatar(initial),
+          errorBuilder: (_, __, ___) => _buildFallbackAvatar(initial),
         ),
       );
     }

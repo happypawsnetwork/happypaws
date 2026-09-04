@@ -4,7 +4,12 @@ import { useState } from "react";
 import { UrgencyAssessmentCard } from "@/components/admin/UrgencyAssessmentCard";
 
 interface RescueUrgencyCellProps {
-  post: any;
+  post: {
+    id: string | number;
+    urgencyLevel?: string | null;
+    aiTriageReason?: string | null;
+    isUrgencyManuallyOverridden?: boolean | null;
+  };
 }
 
 export function RescueUrgencyCell({ post }: RescueUrgencyCellProps) {

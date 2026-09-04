@@ -3,10 +3,9 @@
 // against the same project, so receiving all files in a single function call is required.
 export default {
   "apps/web/**/*.{ts,tsx,js,jsx}": (files) => [
-    // Point ESLint at its config explicitly because CWD is the repo root,
-    // not apps/web, so ESLint 9's automatic config discovery won't find it.
-    `apps/web/node_modules/.bin/eslint --fix --no-warn-ignored --config apps/web/eslint.config.mjs ${files.join(" ")}`,
     `prettier --write ${files.join(" ")}`,
+    `apps/web/node_modules/.bin/eslint --fix --no-warn-ignored --config apps/web/eslint.config.mjs ${files.join(" ")}`,
+    "pnpm --filter web lint",
   ],
 
   "apps/api/**/*.cs": (files) => [

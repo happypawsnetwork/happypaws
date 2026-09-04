@@ -180,7 +180,7 @@ export async function getCurrentAdminAction(): Promise<CurrentAdminUser | null> 
       email: data.email,
       name: data.name,
       avatarUrl: data.avatarUrl || null,
-      roles: (data.roles || []).map((r: any) =>
+      roles: (data.roles || []).map((r: string | { name: string }) =>
         typeof r === "string" ? r : r.name,
       ),
     };

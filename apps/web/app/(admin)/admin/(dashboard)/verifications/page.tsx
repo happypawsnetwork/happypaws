@@ -117,7 +117,7 @@ export default async function VerificationsPage({ searchParams }: PageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-slate-900">
-              {verifications.map((v: any) => (
+              {verifications.map((v) => (
                 <tr key={v.id} className="hover:bg-slate-50/50">
                   <td className="px-6 py-4 font-medium">
                     <Link
@@ -135,7 +135,7 @@ export default async function VerificationsPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
-                      {v.documents.map((doc: any, i: number) => (
+                      {v.documents.map((doc, i: number) => (
                         <a
                           key={i}
                           href={doc.presignedUrl}

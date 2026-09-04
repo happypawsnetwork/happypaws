@@ -52,7 +52,7 @@ export default async function ApprovalsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-slate-900">
-              {posts.map((post: any) => {
+              {posts.map((post) => {
                 return (
                   <tr
                     key={post.id}

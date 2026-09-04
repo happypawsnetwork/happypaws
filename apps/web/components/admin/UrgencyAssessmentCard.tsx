@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { Sparkles, User, Check } from "lucide-react";
 import { updateRescueUrgencyAction } from "@/actions/community";
 import { useRouter } from "next/navigation";

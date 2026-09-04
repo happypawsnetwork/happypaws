@@ -56,12 +56,10 @@ class _MyContentScreenState extends State<MyContentScreen> {
 
       setState(() {
         _allPosts = posts;
-        _pendingPosts = posts
-            .where((p) => p.status == PostStatus.pendingApproval)
-            .toList();
-        _activePosts = posts
-            .where((p) => p.status != PostStatus.pendingApproval)
-            .toList();
+        _pendingPosts =
+            posts.where((p) => p.status == PostStatus.pendingApproval).toList();
+        _activePosts =
+            posts.where((p) => p.status != PostStatus.pendingApproval).toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -359,9 +357,8 @@ class _MyContentScreenState extends State<MyContentScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 13.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(width: 5),
@@ -440,7 +437,7 @@ class _MyContentScreenState extends State<MyContentScreen> {
                     ? Image.network(
                         post.firstPhotoUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
+                        errorBuilder: (_, __, ___) => Container(
                           color: AppColors.splashBackground,
                           child: const Icon(
                             Icons.image_not_supported_outlined,
@@ -451,7 +448,7 @@ class _MyContentScreenState extends State<MyContentScreen> {
                     : Image.file(
                         File(post.firstPhotoUrl!),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
+                        errorBuilder: (_, __, ___) => Container(
                           color: AppColors.splashBackground,
                           child: const Icon(
                             Icons.image_not_supported_outlined,
@@ -803,7 +800,8 @@ class _MyContentScreenState extends State<MyContentScreen> {
       currentList = _allPosts;
       emptyIcon = Icons.post_add_rounded;
       emptyTitle = 'No content yet';
-      emptyDesc = 'Share rescue alerts, foster updates, or adoption stories with the Happy Paws community.';
+      emptyDesc =
+          'Share rescue alerts, foster updates, or adoption stories with the Happy Paws community.';
     }
 
     if (currentList.isEmpty) {
@@ -819,7 +817,7 @@ class _MyContentScreenState extends State<MyContentScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: currentList.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 16),
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         return _buildOwnerPostCard(currentList[index]);
       },
@@ -908,13 +906,11 @@ class _MyContentScreenState extends State<MyContentScreen> {
                           backgroundColor: AppColors.primary.withValues(
                             alpha: 0.1,
                           ),
-                          backgroundImage:
-                              user?.avatarUrl != null &&
+                          backgroundImage: user?.avatarUrl != null &&
                                   user!.avatarUrl!.isNotEmpty
                               ? NetworkImage(user.avatarUrl!)
                               : null,
-                          child:
-                              user?.avatarUrl == null ||
+                          child: user?.avatarUrl == null ||
                                   user!.avatarUrl!.isEmpty
                               ? Text(
                                   user?.name.isNotEmpty == true

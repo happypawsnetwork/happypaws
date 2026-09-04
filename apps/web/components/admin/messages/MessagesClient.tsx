@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ChatThreadSummary,
   getChatMessagesAction,
   findOrCreateDirectThreadAction,
   deleteChatThreadAction,
-  getChatTokenAction,
   sendChatMessageAction,
   canMessageUserAction,
   blockUserAction,
@@ -30,7 +29,6 @@ import {
   MoreVertical,
   LockOpen,
   Ban,
-  Info,
 } from "lucide-react";
 import { useMessaging } from "@/providers/MessagingProvider";
 
@@ -86,7 +84,6 @@ export function MessagesClient({
   initialThreads,
   initialUserId,
   currentUser,
-  initialChatToken,
 }: MessagesClientProps) {
   const { refreshUnreadCount, hubConnection } = useMessaging();
   const [threads, setThreads] = useState<ChatThreadSummary[]>(initialThreads);
@@ -113,11 +110,14 @@ export function MessagesClient({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeThreadIdRef = useRef<number | null>(activeThreadId);
-  activeThreadIdRef.current = activeThreadId;
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
-  activeTargetUserIdRef.current =
-    activeThread?.otherParticipant?.userId ?? null;
+
+  useEffect(() => {
+    activeThreadIdRef.current = activeThreadId;
+    activeTargetUserIdRef.current =
+      activeThread?.otherParticipant?.userId ?? null;
+  }, [activeThreadId, activeThread]);
 
   useEffect(() => {
     if (!hubConnection) return;
@@ -198,17 +198,108 @@ export function MessagesClient({
     };
   }, [hubConnection, currentUser?.id]);
 
+  const loadMessages = useCallback(
+    async (threadId: number) => {
+      try {
+        setThreads((prev) =>
+          prev.map((t) => (t.id === threadId ? { ...t, unreadCount: 0 } : t)),
+        );
+        refreshUnreadCount();
+
+        const msgs = await getChatMessagesAction(threadId);
+        setMessages(msgs);
+
+        const unseen = msgs.filter((m) => m.seenAt === null);
+        unseen.forEach((m) => {
+          if (hubConnection?.state === signalR.HubConnectionState.Connected) {
+            hubConnection
+              .invoke("MarkMessageAsSeen", m.id)
+              .catch(console.error);
+          }
+        });
+      } catch (err) {
+        console.error("Failed to load messages", err);
+      }
+    },
+    [hubConnection, refreshUnreadCount],
+  );
+
+  const handleUserSelect = useCallback(
+    async (userOrId: AdminUserSummary | { id: number }) => {
+      try {
+        const targetUserId =
+          "id" in userOrId
+            ? userOrId.id
+            : "userId" in userOrId
+              ? Number((userOrId as { userId: number }).userId)
+              : 0;
+        const res = await findOrCreateDirectThreadAction(targetUserId);
+        const isSelf = targetUserId === currentUser?.id || res.isSelf;
+
+        setThreads((prev) => {
+          const existing = prev.find((t) => t.id === res.threadId);
+          if (existing) {
+            return prev;
+          }
+
+          const other = res.otherParticipant || {
+            userId: Number(targetUserId),
+            firstName:
+              "firstName" in userOrId
+                ? userOrId.firstName
+                : isSelf && currentUser
+                  ? currentUser.name
+                  : "User",
+            lastName: "lastName" in userOrId ? userOrId.lastName : "",
+            avatarUrl:
+              ("avatarUrl" in userOrId
+                ? userOrId.avatarUrl
+                : isSelf
+                  ? currentUser?.avatarUrl
+                  : null) ?? null,
+            email:
+              ("email" in userOrId
+                ? userOrId.email
+                : isSelf
+                  ? currentUser?.email
+                  : null) ?? null,
+            isSelf,
+          };
+
+          const newThread: ChatThreadSummary = {
+            id: res.threadId,
+            isDirectMessage: true,
+            isSelf,
+            updatedAt: new Date().toISOString(),
+            otherParticipant: other,
+            lastMessage: null,
+            unreadCount: 0,
+          };
+
+          return [newThread, ...prev];
+        });
+
+        setActiveThreadId(res.threadId);
+        setSearchQuery("");
+        setSearchResults([]);
+      } catch (err) {
+        console.error("Failed to start chat", err);
+      }
+    },
+    [currentUser],
+  );
+
   useEffect(() => {
     if (initialUserId) {
       handleUserSelect({ id: initialUserId });
     }
-  }, [initialUserId]);
+  }, [initialUserId, handleUserSelect]);
 
   useEffect(() => {
     if (activeThreadId) {
       loadMessages(activeThreadId);
     }
-  }, [activeThreadId]);
+  }, [activeThreadId, loadMessages]);
 
   useEffect(() => {
     if (!activeThreadId) {
@@ -284,87 +375,6 @@ export function MessagesClient({
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
-
-  const loadMessages = async (threadId: number) => {
-    try {
-      setThreads((prev) =>
-        prev.map((t) => (t.id === threadId ? { ...t, unreadCount: 0 } : t)),
-      );
-      refreshUnreadCount();
-
-      const msgs = await getChatMessagesAction(threadId);
-      setMessages(msgs);
-
-      const unseen = msgs.filter((m) => m.seenAt === null);
-      unseen.forEach((m) => {
-        if (hubConnection?.state === signalR.HubConnectionState.Connected) {
-          hubConnection.invoke("MarkMessageAsSeen", m.id).catch(console.error);
-        }
-      });
-    } catch (err) {
-      console.error("Failed to load messages", err);
-    }
-  };
-
-  const handleUserSelect = async (
-    userOrId: AdminUserSummary | { id: number },
-  ) => {
-    try {
-      const targetUserId =
-        "id" in userOrId ? userOrId.id : (userOrId as any).userId;
-      const res = await findOrCreateDirectThreadAction(targetUserId);
-      const isSelf = targetUserId === currentUser?.id || res.isSelf;
-
-      setThreads((prev) => {
-        const existing = prev.find((t) => t.id === res.threadId);
-        if (existing) {
-          return prev;
-        }
-
-        const other = res.otherParticipant || {
-          userId: Number(targetUserId),
-          firstName:
-            "firstName" in userOrId
-              ? userOrId.firstName
-              : isSelf && currentUser
-                ? currentUser.name
-                : "User",
-          lastName: "lastName" in userOrId ? userOrId.lastName : "",
-          avatarUrl:
-            ("avatarUrl" in userOrId
-              ? userOrId.avatarUrl
-              : isSelf
-                ? currentUser?.avatarUrl
-                : null) ?? null,
-          email:
-            ("email" in userOrId
-              ? userOrId.email
-              : isSelf
-                ? currentUser?.email
-                : null) ?? null,
-          isSelf,
-        };
-
-        const newThread: ChatThreadSummary = {
-          id: res.threadId,
-          isDirectMessage: true,
-          isSelf,
-          updatedAt: new Date().toISOString(),
-          otherParticipant: other,
-          lastMessage: null,
-          unreadCount: 0,
-        };
-
-        return [newThread, ...prev];
-      });
-
-      setActiveThreadId(res.threadId);
-      setSearchQuery("");
-      setSearchResults([]);
-    } catch (err) {
-      console.error("Failed to start chat", err);
-    }
-  };
 
   const handleToggleBlock = async () => {
     const targetUserId = activeThread?.otherParticipant?.userId;

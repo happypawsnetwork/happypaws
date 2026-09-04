@@ -53,11 +53,13 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setCheckedMap({});
     }
-  }, [isOpen]);
+  }
 
   const allCheckboxesSatisfied =
     !checkboxes ||

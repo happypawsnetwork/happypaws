@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { getSponsorshipsAction } from "@/actions/community";
 import { CommunityNav } from "@/components/admin/CommunityNav";
 import { SponsorshipTabs } from "./sponsorship-tabs";
@@ -96,7 +95,7 @@ export default async function AdminSponsorshipsPage(props: {
                   </td>
                 </tr>
               ) : (
-                sponsorships.map((sponsorship: any) => {
+                sponsorships.map((sponsorship) => {
                   const goalDescription =
                     sponsorship.sponsorshipDetails?.goalDescription ||
                     sponsorship.goalDescription ||
