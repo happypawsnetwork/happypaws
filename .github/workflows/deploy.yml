@@ -72,9 +72,14 @@ jobs:
       - name: Trigger Coolify API deployment
         env:
           COOLIFY_API_WEBHOOK: ${{ secrets.COOLIFY_API_WEBHOOK }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || secrets.COOLIFY_TOKEN }}
         run: |
           if [ -n "$COOLIFY_API_WEBHOOK" ]; then
-            curl -fsS -X POST "$COOLIFY_API_WEBHOOK"
+            AUTH_HEADER=()
+            if [ -n "$COOLIFY_API_TOKEN" ]; then
+              AUTH_HEADER=(-H "Authorization: Bearer $COOLIFY_API_TOKEN")
+            fi
+            curl -fsS -X POST "${AUTH_HEADER[@]}" "$COOLIFY_API_WEBHOOK"
             echo "API deployment triggered successfully."
           else
             echo "::warning::COOLIFY_API_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
@@ -133,9 +138,14 @@ jobs:
       - name: Trigger Coolify Web deployment
         env:
           COOLIFY_WEB_WEBHOOK: ${{ secrets.COOLIFY_WEB_WEBHOOK }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || secrets.COOLIFY_TOKEN }}
         run: |
           if [ -n "$COOLIFY_WEB_WEBHOOK" ]; then
-            curl -fsS -X POST "$COOLIFY_WEB_WEBHOOK"
+            AUTH_HEADER=()
+            if [ -n "$COOLIFY_API_TOKEN" ]; then
+              AUTH_HEADER=(-H "Authorization: Bearer $COOLIFY_API_TOKEN")
+            fi
+            curl -fsS -X POST "${AUTH_HEADER[@]}" "$COOLIFY_WEB_WEBHOOK"
             echo "Web deployment triggered successfully."
           else
             echo "::warning::COOLIFY_WEB_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
