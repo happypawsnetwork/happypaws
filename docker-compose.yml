@@ -1,0 +1,71 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM postgres:18-alpine
+        RUN apk add --no-cache postgis \
+            && cp -s /usr/share/postgresql18/extension/*postgis* /usr/local/share/postgresql/extension/ \
+            && cp -s /usr/lib/postgresql18/*postgis* /usr/local/lib/postgresql/
+    image: happypaws-postgres:18-postgis
+    environment:
+      POSTGRES_USER: happypaws_admin
+      POSTGRES_PASSWORD: happypaws_dev
+      POSTGRES_DB: happypaws
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    command:
+      - valkey-server
+      - --requirepass
+      - happypaws_dev
+      - --user
+      - happypaws_admin
+      - "on"
+      - ">happypaws_dev"
+      - "~*"
+      - "&*"
+      - "+@all"
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: happypaws_admin
+      MINIO_ROOT_PASSWORD: happypaws_dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 happypaws_admin happypaws_dev; do
+        echo 'Waiting for MinIO to start...'
+        sleep 2
+      done;
+      /usr/bin/mc mb --ignore-existing local/happypaws-public;
+      /usr/bin/mc mb --ignore-existing local/happypaws-private;
+      /usr/bin/mc anonymous set download local/happypaws-public;
+      /usr/bin/mc anonymous set none local/happypaws-private;
+      echo 'MinIO buckets and policies configured successfully.';
+      exit 0;
+      "
+
+volumes:
+  postgres_data:
+  valkey_data:
+  minio_data:

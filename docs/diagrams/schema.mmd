@@ -1,0 +1,302 @@
+erDiagram
+    users {
+        BIGINT id PK
+        TEXT email UK
+        TEXT password_hash
+        TEXT first_name
+        TEXT last_name
+        TEXT phone_number
+        TEXT avatar_url
+        INT reputation_points
+        BOOLEAN is_active
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    user_roles {
+        BIGINT user_id PK, FK
+        TEXT role_name PK
+    }
+
+    user_badges {
+        BIGINT id PK
+        BIGINT user_id FK
+        TEXT badge_type
+        TIMESTAMPTZ awarded_at
+    }
+
+    kyc_verifications {
+        BIGINT id PK
+        BIGINT user_id FK
+        TEXT role_requested
+        TEXT document_url
+        TEXT status
+        BIGINT reviewed_by FK
+        TIMESTAMPTZ reviewed_at
+        TEXT rejection_reason
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    user_devices {
+        BIGINT id PK
+        BIGINT user_id FK
+        TEXT fcm_token UK
+        TEXT device_type
+        TIMESTAMPTZ last_active_at
+        TIMESTAMPTZ created_at
+    }
+
+    can_message {
+        BIGINT id PK
+        BIGINT user_id FK
+        BIGINT target_user_id FK
+        BOOLEAN is_allowed
+        TIMESTAMPTZ created_at
+    }
+
+    lifestyle_profiles {
+        BIGINT user_id PK, FK
+        INT home_size_sqft
+        TEXT activity_level
+        BOOLEAN has_existing_pets
+        JSONB lifestyle_data
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    animals {
+        BIGINT id PK
+        BIGINT owner_id FK
+        TEXT name
+        TEXT species
+        TEXT breed
+        TEXT description
+        TEXT status
+        JSONB attributes
+        TEXT gender
+        TSVECTOR search_vector
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    animal_media {
+        BIGINT id PK
+        BIGINT animal_id FK
+        TEXT media_url
+        TEXT media_type
+        BOOLEAN is_primary
+        TIMESTAMPTZ created_at
+    }
+
+    rescue_cases {
+        BIGINT id PK
+        BIGINT animal_id FK
+        BIGINT reporter_id FK
+        TEXT title
+        TEXT description
+        TEXT photo_url
+        GEOGRAPHY location
+        TEXT ai_urgency_level
+        TEXT vet_urgency_level
+        TEXT status
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    rescue_updates {
+        BIGINT id PK
+        BIGINT rescue_case_id FK
+        BIGINT user_id FK
+        TEXT update_text
+        TEXT photo_url
+        TIMESTAMPTZ created_at
+    }
+
+    transport_requests {
+        BIGINT id PK
+        BIGINT rescue_case_id FK
+        BIGINT transporter_id FK
+        GEOGRAPHY pickup_location
+        GEOGRAPHY dropoff_location
+        TEXT status
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    foster_placements {
+        BIGINT id PK
+        BIGINT animal_id FK
+        BIGINT foster_id FK
+        TIMESTAMPTZ start_date
+        TIMESTAMPTZ end_date
+        TEXT status
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    adoption_listings {
+        BIGINT id PK
+        BIGINT animal_id FK
+        BIGINT lister_id FK
+        TEXT description
+        GEOGRAPHY location
+        TEXT status
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    adoption_applications {
+        BIGINT id PK
+        BIGINT adoption_listing_id FK
+        BIGINT adopter_id FK
+        TEXT message
+        TEXT status
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    vet_reviews {
+        BIGINT id PK
+        BIGINT rescue_case_id FK
+        BIGINT vet_id FK
+        TEXT urgency_override
+        TEXT guidance_notes
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    sponsorships {
+        BIGINT id PK
+        BIGINT sponsor_id FK
+        BIGINT rescue_case_id FK
+        BIGINT animal_id FK
+        NUMERIC amount
+        TEXT status
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    posts {
+        BIGINT id PK
+        BIGINT author_id FK
+        TEXT post_type
+        TEXT content
+        GEOGRAPHY location
+        BIGINT rescue_case_id FK
+        BIGINT adoption_listing_id FK
+        BOOLEAN is_deleted
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    post_media {
+        BIGINT id PK
+        BIGINT post_id FK
+        TEXT media_url
+        TEXT media_type
+        TIMESTAMPTZ created_at
+    }
+
+    post_likes {
+        BIGINT post_id PK, FK
+        BIGINT user_id PK, FK
+        TIMESTAMPTZ created_at
+    }
+
+    chat_threads {
+        BIGINT id PK
+        BIGINT rescue_case_id FK
+        BIGINT adoption_application_id FK
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    chat_participants {
+        BIGINT thread_id PK, FK
+        BIGINT user_id PK, FK
+        TIMESTAMPTZ last_read_at
+    }
+
+    messages {
+        BIGINT id PK
+        BIGINT thread_id FK
+        BIGINT sender_id FK
+        TEXT content
+        TIMESTAMPTZ sent_at
+        TIMESTAMPTZ delivered_at
+        TIMESTAMPTZ seen_at
+        BOOLEAN is_deleted
+    }
+
+    notifications {
+        BIGINT id PK
+        BIGINT user_id FK
+        TEXT type
+        TEXT title
+        TEXT content
+        BIGINT message_id FK
+        BIGINT rescue_case_id FK
+        BIGINT transport_request_id FK
+        TIMESTAMPTZ read_at
+        TIMESTAMPTZ created_at
+    }
+
+    %% Relationships
+
+    users ||--o{ user_badges : earns
+    animals ||--o{ animal_media : has
+    posts ||--o{ post_media : has
+    users ||--o{ user_roles : has
+    users ||--o{ kyc_verifications : submits
+    users ||--o{ kyc_verifications : reviews
+    users ||--o{ user_devices : uses
+    users ||--o{ can_message : authorizes
+    users ||--o{ can_message : targets
+    users ||--o| lifestyle_profiles : owns
+    users ||--o{ animals : owns
+    users ||--o{ rescue_cases : reports
+    users ||--o{ rescue_updates : posts
+    users ||--o{ transport_requests : accepts
+    users ||--o{ foster_placements : fosters
+    users ||--o{ adoption_listings : creates
+    users ||--o{ adoption_applications : submits
+    users ||--o{ vet_reviews : authors
+    users ||--o{ sponsorships : funds
+    users ||--o{ posts : authors
+    users ||--o{ post_likes : likes
+    users ||--o{ chat_participants : participates_in
+    users ||--o{ messages : sends
+    users ||--o{ notifications : receives
+    messages ||--o{ notifications : triggers
+    rescue_cases ||--o{ notifications : triggers
+    transport_requests ||--o{ notifications : triggers
+
+    animals ||--o{ rescue_cases : involved_in
+    animals ||--o{ foster_placements : placed_in
+    animals ||--o{ adoption_listings : listed_in
+    animals ||--o{ sponsorships : receives
+
+    rescue_cases ||--o{ rescue_updates : has
+    rescue_cases ||--o{ transport_requests : requires
+    rescue_cases ||--o{ vet_reviews : receives
+    rescue_cases ||--o{ sponsorships : receives
+    rescue_cases ||--o{ posts : referenced_by
+    rescue_cases ||--o{ chat_threads : context_for
+
+    adoption_listings ||--o{ adoption_applications : receives
+    adoption_listings ||--o{ posts : referenced_by
+
+    adoption_applications ||--o{ chat_threads : context_for
+
+    posts ||--o{ post_likes : receives
+
+    chat_threads ||--o{ chat_participants : has
+    chat_threads ||--o{ messages : contains

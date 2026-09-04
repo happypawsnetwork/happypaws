@@ -1,0 +1,53 @@
+flowchart TB
+    %% --- Modern Styling Definitions ---
+    classDef client fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef backend fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef data fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef external fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef group fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5,color:#334155
+
+    %% --- Logical Groupings ---
+    subgraph Clients ["📱 Client Applications"]
+        direction LR
+        Mobile["Flutter Mobile App<br/>(Adopters, Fosters, Vets)"]:::client
+        Web["Next.js Web App<br/>(Public & Admin)"]:::client
+    end
+
+    subgraph Core ["⚙️ Core Backend"]
+        API["ASP.NET Core 10 API<br/>(Clean Architecture)"]:::backend
+    end
+
+    subgraph DataTier ["🗄️ Data & Persistence"]
+        direction LR
+        DB[("PostgreSQL")]:::data
+        Redis[("Redis<br/>(Rate Limiting & Cache)")]:::data
+        Storage[("Cloudflare R2 / MinIO<br/>(Public & Private Buckets)")]:::data
+    end
+
+    subgraph External ["🌐 External Integrations"]
+        direction LR
+        Gemini["Google Gemini<br/>AI Image Triage"]:::external
+        FCM["Firebase (FCM)<br/>Push Notifications"]:::external
+        Resend["Resend API<br/>Transactional Emails"]:::external
+    end
+
+    %% --- Connections & Data Flow ---
+    %% Client to API
+    Mobile <==>|"REST / SignalR (WSS)"| API
+    Web <==>|"REST / HTTPS"| API
+    
+    %% API to Data
+    API ==>|"Entity Framework"| DB
+    API ==>|"StackExchange.Redis"| Redis
+    API ==>|"S3 API"| Storage
+    
+    %% API to External Services
+    API -->|"HTTPS"| Gemini
+    API -->|"HTTPS"| Resend
+    API -->|"HTTPS"| FCM
+    
+    %% Async Notifications
+    FCM -.->|"Push Alerts"| Mobile
+
+    %% --- Apply Subgraph Styling ---
+    class Clients,Core,DataTier,External group

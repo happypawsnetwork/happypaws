@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="HappyPaws.Api/HappyPaws.Api.csproj" />
+  <Project Path="HappyPaws.Application/HappyPaws.Application.csproj" />
+  <Project Path="HappyPaws.Domain/HappyPaws.Domain.csproj" />
+  <Project Path="HappyPaws.Infrastructure/HappyPaws.Infrastructure.csproj" />
+</Solution>

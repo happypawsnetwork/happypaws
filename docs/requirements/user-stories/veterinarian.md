@@ -1,0 +1,12 @@
+# Veterinarian functionalities
+
+| User story | Functionality | Description | Completed |
+| --- | --- | --- | --- |
+| As a veterinarian, I want to log in to my case review screens so I can manage my professional-facing access separately from my general user session. | Login and authentication | Signs in securely with role-scoped, JWT-enforced access to case review and messaging screens. | ✅ |
+| As a veterinarian, I want to submit my clinic registration or professional license for review so my account can act as a verified veterinarian. | Identity verification (KYC) | Submits a clinic registration or professional license, rather than a general identity document, for administrator review before the account can act as a verified veterinarian. | ✅ |
+| As a veterinarian, I want to receive geo-targeted rescue alerts when a nearby case needs medical attention. | Geo-targeted rescue alerts | Receives a push notification when a nearby case is classified as critical or moderate and needs medical attention. | ❌ |
+| As a veterinarian, I want to review AI photo triage and confirm urgency so I can confirm or override it with my professional judgment. | Review AI photo triage and confirm urgency | Opens a reported case, reviews Gemini’s critical, moderate, or low classification against the submitted photo, and confirms or overrides it with a professional judgement. | ❌ |
+| As a veterinarian, I want to provide medical guidance so I can give treatment advice to the animal's foster, transporter, or owner. | Provide medical guidance | Responds to a case or a private message with treatment advice for the animal’s foster, transporter, or owner. | ❌ |
+| As a veterinarian, I want to communicate directly with the user handling an animal through private in-app messaging to give guidance or ask for more information. | Private in-app messaging | Communicates directly with the user currently handling an animal, without a shared phone number, to give guidance or ask for more information. | ❌ |
+| As a veterinarian, I want to build reputation and earn an expert-verified badge so users can tell my advice apart from unverified comments. | Reputation and trust badges | Builds reputation and an expert-verified badge from confirmed medical input and completed case reviews. | ❌ |
+| As a veterinarian, I want to receive notifications for new nearby cases that need medical review so I can act quickly. | Notifications | Receives alerts for new nearby cases that need medical review and incoming messages. | ❌ |

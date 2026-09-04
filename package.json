@@ -1,0 +1,40 @@
+{
+  "name": "happypaws",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "description": "A digital platform for coordinated animal rescue and rehoming in Sri Lanka.",
+  "author": "Nethmina Gunasekara",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/happypawsnetwork/happypaws.git"
+  },
+  "bugs": {
+    "url": "https://github.com/happypawsnetwork/happypaws/issues"
+  },
+  "homepage": "https://github.com/happypawsnetwork/happypaws#readme",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:infra": "docker compose up -d",
+    "dev:api": "docker compose up -d && pnpm --filter api dev",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:mobile": "pnpm --filter mobile dev",
+    "kill-port": "node scripts/kill-ports.js",
+    "ports:kill": "node scripts/kill-ports.js",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "build": "turbo run build",
+    "lint:all": "turbo run lint",
+    "format:all": "turbo run format",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "turbo": "latest",
+    "prettier": "^3.0.0"
+  },
+  "allowScripts": {
+    "unrs-resolver@1.12.2": true
+  }
+}

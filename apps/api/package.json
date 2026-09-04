@@ -1,0 +1,11 @@
+{
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose -f ../../docker-compose.yml up -d && dotnet watch --project HappyPaws.Api",
+    "build": "dotnet build HappyPaws.slnx",
+    "test": "dotnet test HappyPaws.slnx",
+    "lint": "dotnet format HappyPaws.slnx --verify-no-changes",
+    "format": "dotnet format HappyPaws.slnx"
+  }
+}

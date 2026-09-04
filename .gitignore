@@ -1,0 +1,67 @@
+# ==========================================
+# Happy Paws Monorepo - Global Git Ignore
+# ==========================================
+
+# OS Metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Global IDEs & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.suo
+*.sln.docstates
+*.userprefs
+
+# Monorepo Tooling & Caches
+node_modules/
+.nx/cache/
+.husky/_/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+.turbo/
+
+# Global Environment Variables
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local Test Data & Placeholders
+test-data/
+
+# Temporary Scratch, Logs, & Agent Artifacts
+scratch/
+tmp/
+temp/
+
+# Local Docker Storage & Volume Mounts
+*_data/
+

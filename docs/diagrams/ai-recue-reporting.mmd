@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    
+    %% --- Participants & Actors ---
+    actor U as 📱 User (Mobile)
+    participant A as ⚙️ HappyPaws API
+    participant S as 🌍 Storage (Public)
+    participant G as 🤖 Gemini Vision API
+    participant F as 🔔 FCM (Push)
+    actor V as 👨‍⚕️ Vet / Admin
+
+    %% --- The Triage Pipeline ---
+    U->>+A: Report Rescue (GPS + Photo + Desc)
+    
+    A->>+S: Upload Photo
+    S-->>-A: Return Public Photo URL
+    
+    A->>+G: Request AI Triage (Photo + Desc)
+    Note over G: Gemini analyzes visible injuries<br/>and situational danger.
+    G-->>-A: Urgency Level (Critical/Moderate/Low)
+    
+    A->>A: Save Rescue Case & AI Triage to DB
+    
+    A->>+F: Dispatch Geo-targeted Alert
+    F-->>-V: Push Notification to Nearby Responders
+    
+    A-->>-U: Acknowledge Report Submission
+    
+    %% --- Manual Review & Override ---
+    V->>+A: Review Case Details
+    V->>A: Confirm or Override Urgency
+    A-->>U: Status Update (via SignalR / FCM)
+    A-->>-V: Confirmation Saved

@@ -1,0 +1,55 @@
+# ==========================================
+# Happy Paws API (.NET) - Git Ignore
+# ==========================================
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+ref/
+refint/
+
+# Visual Studio & IDEs
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.slnx.user
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+[Ii]gnore[Ii]gnore/
+
+# API Secrets & Local Configs
+.env
+appsettings.*.local.json
+secrets.json
+
+# Test Results & Coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.coverage
+*.coveragexml
+*.trx
+
+# NuGet Packages (if restored locally instead of global cache)
+*.nupkg
+*.snupkg
+packages/
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/

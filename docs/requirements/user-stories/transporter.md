@@ -1,0 +1,16 @@
+# Transporter functionalities
+
+| User story | Functionality | Description | Completed |
+| --- | --- | --- | --- |
+| As a transporter, I want to log in to my transport screens so I can manage my transport requests. | Login and authentication | Signs in securely with role-scoped, JWT-enforced access to transport requests and case screens. | ✅ |
+| As a transporter, I want to submit my identity document for review so I can accept transport tasks. | Identity verification (KYC) | Submits an identity document for administrator review before the account can accept a transport task. | ✅ |
+| As a transporter, I want to receive geo-targeted transport alerts so I know when an animal nearby needs to be moved. | Geo-targeted transport alerts | Receives a push notification when a nearby case needs an animal moved between a rescue site, a foster, a veterinarian, or an adopter. | ❌ |
+| As a transporter, I want to report an animal I find while en route so they can be triaged. | Rescue reporting | Reports an animal found while en route, with photo and automatic location capture feeding the same triage pipeline every other role uses. | ✅ |
+| As a transporter, I want to accept and track a transport task so everyone knows the status of the animal in transit. | Accept and track a transport task | Claims an open transport request and updates its status through assigned, picked up, in transit, and delivered, which the administration panel’s case map reflects in real time. | ❌ |
+| As a transporter, I want to use private in-app messaging to coordinate pickup and drop-off timing so I don't have to share my phone number. | Private in-app messaging | Coordinates pickup and drop-off timing with fosters, veterinarians, and adopters through encrypted chat, without exchanging a phone number. | ❌ |
+| As a transporter, I want to earn reputation and trust badges from my verified transport runs so fosters and veterinarians trust me. | Reputation and trust badges | Builds reputation and a visible trust badge from completed, verified transport runs. | ❌ |
+| As a transporter, I want to receive notifications for open transport requests nearby so I can respond quickly. | Notifications | Receives alerts for open transport requests nearby, new messages, and status updates on any case currently assigned to them. | ❌ |
+| As a transporter, I want to submit an offer on a Transport post with my proposed pickup window so the requester can see my availability. | Transport offers | Submits an offer with a pickup window on an open transport request. | ❌ |
+| As a transporter, I want to receive a notification when my transport offer is accepted so I know when to show up. | Offer acceptance alerts | Receives a push notification when a transport offer is accepted by the requester. | ❌ |
+| As a transporter, I want to mark the transport as PickedUp, InTransit, and Delivered as I progress so the requester knows where the animal is. | Transport status updates | Updates the status of an active transport task through its lifecycle. | ❌ |
+| As a transporter, I want to see all my transport tasks in "My Transports" so I can track my active and completed deliveries. | My transports tracking | Views a list of all active and completed transport tasks in the profile section. | ❌ |

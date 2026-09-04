@@ -1,0 +1,107 @@
+name: Deploy services (API and Web)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/api/**"
+      - "apps/web/**"
+      - ".github/workflows/deploy-services.yml"
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - "all"
+          - "api"
+          - "web"
+
+concurrency:
+  group: deploy-services-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    name: Build and deploy API (ARM64)
+    if: github.event_name == 'push' || inputs.service == 'all' || inputs.service == 'api'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Coolify container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/happypaws-api:latest
+            ${{ secrets.REGISTRY_URL }}/happypaws-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify API deployment
+        run: |
+          curl -fsS -X POST "${{ secrets.COOLIFY_API_WEBHOOK }}"
+
+  deploy-web:
+    name: Build and deploy Web (ARM64)
+    if: github.event_name == 'push' || inputs.service == 'all' || inputs.service == 'web'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Coolify container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          platforms: linux/arm64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.API_BASE_URL || 'https://api.happypawsnetwork.com' }}
+            NEXT_PUBLIC_APP_URL=${{ vars.APP_URL || 'https://happypawsnetwork.com' }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/happypaws-web:latest
+            ${{ secrets.REGISTRY_URL }}/happypaws-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify Web deployment
+        run: |
+          curl -fsS -X POST "${{ secrets.COOLIFY_WEB_WEBHOOK }}"

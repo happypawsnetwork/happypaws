@@ -1,0 +1,88 @@
+name: Deploy mobile app (Android APK to CDN)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/deploy-mobile.yml"
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mobile-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    name: Build, Sign, and Publish APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.x"
+          channel: "stable"
+          cache: true
+
+      - name: Generate mobile environment configuration
+        working-directory: apps/mobile
+        run: |
+          cat <<EOF > .env
+          API_BASE_URL=${{ vars.API_BASE_URL || 'https://api.happypawsnetwork.com' }}
+          GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          EOF
+
+      - name: Decode Android release keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/android/app/upload-keystore.jks
+
+      - name: Install Flutter dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: apps/mobile
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: flutter build apk --release
+
+      - name: Publish APK to Cloudflare R2 CDN
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          ENDPOINT_URL="https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          APK_SOURCE="apps/mobile/build/app/outputs/flutter-apk/app-release.apk"
+
+          # Upload primary release APK
+          aws s3 cp "$APK_SOURCE" "s3://${{ secrets.R2_BUCKET_NAME }}/downloads/happypaws.apk" \
+            --endpoint-url "$ENDPOINT_URL" \
+            --content-type "application/vnd.android.package-archive"
+
+          # Upload versioned release copy
+          VERSION_TAG="${{ github.ref_name }}"
+          aws s3 cp "$APK_SOURCE" "s3://${{ secrets.R2_BUCKET_NAME }}/downloads/happypaws-${VERSION_TAG}.apk" \
+            --endpoint-url "$ENDPOINT_URL" \
+            --content-type "application/vnd.android.package-archive"
+
+      - name: Display CDN download link
+        run: |
+          echo "================================================="
+          echo "Mobile app published to Cloudflare R2 CDN:"
+          echo "https://cdn.happypawsnetwork.com/downloads/happypaws.apk"
+          echo "================================================="

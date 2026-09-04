@@ -1,0 +1,32 @@
+flowchart TB
+    %% --- Modern Styling Definitions ---
+    classDef client fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef backend fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef publicStorage fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef privateStorage fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef group fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5,color:#334155
+
+    %% --- Core Components ---
+    Client["📱 Client App<br/>(Web / Mobile)"]:::client
+    API["⚙️ HappyPaws API<br/>(IStorageService)"]:::backend
+
+    subgraph StorageGroup ["☁️ Storage Infrastructure (Cloudflare R2 / MinIO)"]
+        direction LR
+        PublicBucket["🌍 happypaws-public<br/>(CDN Cached & Public)"]:::publicStorage
+        PrivateBucket["🔒 happypaws-private<br/>(Zero Public Access)"]:::privateStorage
+    end
+
+    %% --- Data Flows ---
+    %% Public Asset Flow
+    Client ==>|"Upload Animal Photo"| API
+    API ==>|"PutObject (Standard)"| PublicBucket
+    Client -.->|"Direct URL Read (Fast)"| PublicBucket
+
+    %% Private / Secure Asset Flow
+    Client ==>|"Upload KYC / Vet License"| API
+    API ==>|"PutObject (Secure)"| PrivateBucket
+    Client <==>|"Request Access ⇄ Generate Presigned URL"| API
+    Client -.->|"Temporary Authorized Read (Time-Limited)"| PrivateBucket
+
+    %% --- Apply Subgraph Styling ---
+    class StorageGroup group

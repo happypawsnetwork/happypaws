@@ -1,0 +1,59 @@
+flowchart TB
+    %% --- Modern Styling Definitions ---
+    classDef apiLayer fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef infraLayer fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef appLayer fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef domainLayer fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff,rx:8px,ry:8px
+    classDef group fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5,color:#334155
+
+    %% --- Layers ---
+    subgraph ApiGroup ["🌐 HappyPaws.Api [Presentation Layer]"]
+        direction LR
+        Controllers["Controllers"]:::apiLayer
+        SignalRHubs["SignalR Hubs"]:::apiLayer
+        Middlewares["Middlewares"]:::apiLayer
+    end
+
+    subgraph InfraGroup ["🛠️ HappyPaws.Infrastructure [Infrastructure Layer]"]
+        direction LR
+        EFCore["EF Core / DbContext"]:::infraLayer
+        RedisCache["Redis (Rate Limiting)"]:::infraLayer
+        S3Storage["MinIO / R2 Service"]:::infraLayer
+        ExternalAPIs["Gemini / Resend / FCM"]:::infraLayer
+    end
+
+    subgraph AppGroup ["⚙️ HappyPaws.Application [Application Layer]"]
+        direction LR
+        CQRS["MediatR<br/>(Commands & Queries)"]:::appLayer
+        Interfaces["Interfaces"]:::appLayer
+        DTOs["DTOs"]:::appLayer
+    end
+
+    subgraph DomainGroup ["💎 HappyPaws.Domain [Domain Layer]"]
+        direction LR
+        Entities["Entities"]:::domainLayer
+        ValueObjects["Value Objects"]:::domainLayer
+        DomainEvents["Domain Events"]:::domainLayer
+        Exceptions["Exceptions"]:::domainLayer
+    end
+
+    %% --- Dependencies & Flow ---
+    %% Presentation to Application
+    Controllers ==>|"Depends on"| CQRS
+    SignalRHubs ==>|"Depends on"| CQRS
+    
+    %% DI Configuration
+    ApiGroup -.->|"Configures DI for"| InfraGroup
+    
+    %% Infrastructure implementing Application contracts
+    EFCore -.->|"Implements"| Interfaces
+    RedisCache -.->|"Implements"| Interfaces
+    S3Storage -.->|"Implements"| Interfaces
+    ExternalAPIs -.->|"Implements"| Interfaces
+    
+    %% Core Domain Dependencies
+    CQRS ==>|"Depends on"| Entities
+    EFCore ==>|"Depends on"| Entities
+
+    %% --- Apply Subgraph Styling ---
+    class ApiGroup,InfraGroup,AppGroup,DomainGroup group
