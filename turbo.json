@@ -1,5 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": [
+    "PUB_CACHE",
+    "LOCALAPPDATA",
+    "APPDATA",
+    "HOME",
+    "USERPROFILE",
+    "JAVA_HOME",
+    "ANDROID_HOME",
+    "FLUTTER_ROOT",
+    "PATH"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

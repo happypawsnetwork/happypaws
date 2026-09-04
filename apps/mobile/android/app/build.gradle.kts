@@ -59,7 +59,7 @@ android {
     signingConfigs {
         create("release") {
             val keystoreFile = file("upload-keystore.jks")
-            if (keystoreFile.exists()) {
+            if (keystoreFile.exists() && keystoreFile.length() > 0) {
                 storeFile = keystoreFile
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
@@ -71,7 +71,8 @@ android {
     buildTypes {
         release {
             val releaseSigning = signingConfigs.getByName("release")
-            signingConfig = if (file("upload-keystore.jks").exists()) releaseSigning else signingConfigs.getByName("debug")
+            val keystoreFile = file("upload-keystore.jks")
+            signingConfig = if (keystoreFile.exists() && keystoreFile.length() > 0) releaseSigning else signingConfigs.getByName("debug")
         }
     }
 }

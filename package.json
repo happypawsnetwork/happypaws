@@ -25,6 +25,8 @@
     "db:reset": "docker compose down -v && docker compose up -d",
     "build": "turbo run build",
     "lint:all": "turbo run lint",
+    "test": "turbo run test",
+    "test:all": "turbo run test",
     "format:all": "turbo run format",
     "prepare": "husky"
   },
