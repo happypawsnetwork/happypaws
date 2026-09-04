@@ -101,7 +101,7 @@ git add .
 # 9. Commit the merge
 Write-Host "Finalizing the sync..."
 if (git status --porcelain) {
-    git commit -m "chore: auto-sync staging to main (sanitized)"
+    git commit --no-edit
 }
 
 # 10. Return to staging

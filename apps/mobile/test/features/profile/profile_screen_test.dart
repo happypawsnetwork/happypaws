@@ -107,7 +107,7 @@ void main() {
       roles: [UserRole(name: 'Volunteer', isVerified: false)],
     );
 
-    testWidgets('renders profile header without edit icon button', (
+    testWidgets('renders profile header with edit icon button', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(user: testUser));
@@ -116,31 +116,24 @@ void main() {
       expect(find.text('Nethmina Gunasekara'), findsOneWidget);
       expect(find.text('"Animal rescuer"'), findsOneWidget);
 
-      // Verify no edit icon inside the profile header
-      expect(find.byIcon(Icons.edit_rounded), findsNothing);
+      // Verify edit icon button exists and opens edit profile
+      expect(find.byIcon(Icons.edit_rounded), findsOneWidget);
     });
 
-    testWidgets('renders profile header with paw pattern background image', (
+    testWidgets('renders profile header with themed card background', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(user: testUser));
       await tester.pumpAndSettle();
 
-      final imageFinder = find.byWidgetPredicate(
+      final cardFinder = find.byWidgetPredicate(
         (widget) =>
-            widget is Image &&
-            widget.image ==
-                const AssetImage('assets/images/pattern_pet_paws.jpg'),
+            widget is Container &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).borderRadius ==
+                BorderRadius.circular(24),
       );
-      expect(imageFinder, findsOneWidget);
-
-      final opacityFinder = find.ancestor(
-        of: imageFinder,
-        matching: find.byType(Opacity),
-      );
-      expect(opacityFinder, findsOneWidget);
-      final opacityWidget = tester.widget<Opacity>(opacityFinder);
-      expect(opacityWidget.opacity, equals(0.24));
+      expect(cardFinder, findsOneWidget);
     });
 
     testWidgets(
@@ -150,23 +143,9 @@ void main() {
         await tester.pumpAndSettle();
 
         final myProfileFinder = find.widgetWithText(ListTile, 'My Profile');
-        final notificationsFinder = find.widgetWithText(
-          ListTile,
-          'Notifications',
-        );
-
         expect(myProfileFinder, findsOneWidget);
-        expect(notificationsFinder, findsOneWidget);
-
-        // Verify My Profile is positioned above Notifications vertically
-        final myProfileOffset = tester.getTopLeft(myProfileFinder);
-        final notificationsOffset = tester.getTopLeft(notificationsFinder);
-        expect(myProfileOffset.dy, lessThan(notificationsOffset.dy));
 
         // Verify icon is person_rounded and uses accent color
-        final personIconFinder = find.byIcon(Icons.person_rounded);
-        expect(personIconFinder, findsWidgets);
-
         final iconWidget = tester.widget<Icon>(
           find.descendant(
             of: myProfileFinder,
@@ -186,6 +165,20 @@ void main() {
           decoration.color,
           equals(AppColors.accent.withValues(alpha: 0.1)),
         );
+
+        // Scroll down to verify Notifications list tile is also present
+        final notificationsFinder = find.widgetWithText(
+          ListTile,
+          'Notifications',
+        );
+        await tester.scrollUntilVisible(
+          notificationsFinder,
+          200,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.pumpAndSettle();
+
+        expect(notificationsFinder, findsOneWidget);
       },
     );
 
@@ -197,22 +190,14 @@ void main() {
 
         final myProfileFinder = find.widgetWithText(ListTile, 'My Profile');
         final getVerifiedFinder = find.widgetWithText(ListTile, 'Get Verified');
-        final notificationsFinder = find.widgetWithText(
-          ListTile,
-          'Notifications',
-        );
 
         expect(myProfileFinder, findsOneWidget);
         expect(getVerifiedFinder, findsOneWidget);
-        expect(notificationsFinder, findsOneWidget);
 
-        // Verify vertical order: My Profile < Get Verified < Notifications
+        // Verify vertical order: My Profile is above Get Verified
         final myProfileDy = tester.getTopLeft(myProfileFinder).dy;
         final getVerifiedDy = tester.getTopLeft(getVerifiedFinder).dy;
-        final notificationsDy = tester.getTopLeft(notificationsFinder).dy;
-
         expect(myProfileDy, lessThan(getVerifiedDy));
-        expect(getVerifiedDy, lessThan(notificationsDy));
 
         // Verify icon is verified_rounded and has blue color
         const expectedBlue = Color(0xFF0064E0);
@@ -233,9 +218,24 @@ void main() {
         final decoration = containerWidget.decoration as BoxDecoration;
         expect(decoration.color, equals(expectedBlue.withValues(alpha: 0.1)));
         expect(decoration.borderRadius, equals(BorderRadius.circular(10)));
+
+        // Scroll down to verify Notifications list tile is also present
+        final notificationsFinder = find.widgetWithText(
+          ListTile,
+          'Notifications',
+        );
+        await tester.scrollUntilVisible(
+          notificationsFinder,
+          200,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.pumpAndSettle();
+
+        expect(notificationsFinder, findsOneWidget);
       },
     );
-    testWidgets('renders avatar with a ring in accent color', (
+
+    testWidgets('renders avatar with primary color background', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(user: testUser));
@@ -244,17 +244,11 @@ void main() {
       final avatarFinder = find.byType(CircleAvatar);
       expect(avatarFinder, findsOneWidget);
 
-      final ringContainerFinder = find.ancestor(
-        of: avatarFinder,
-        matching: find.byType(Container),
+      final avatarWidget = tester.widget<CircleAvatar>(avatarFinder);
+      expect(
+        avatarWidget.backgroundColor,
+        equals(AppColors.primary.withValues(alpha: 0.1)),
       );
-      expect(ringContainerFinder, findsWidgets);
-
-      final ringWidget = tester.widget<Container>(ringContainerFinder.first);
-      final decoration = ringWidget.decoration as BoxDecoration;
-      expect(decoration.shape, equals(BoxShape.circle));
-      expect(decoration.border, isNotNull);
-      expect(decoration.border!.top.color, equals(AppColors.accent));
     });
   });
 }

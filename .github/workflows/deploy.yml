@@ -1,0 +1,223 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: ["main", "staging"]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - "all"
+          - "api"
+          - "web"
+          - "mobile"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    name: Build and deploy API (ARM64)
+    if: github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'api') || github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate registry credentials
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          if [ -z "$REGISTRY_URL" ] || [ -z "$REGISTRY_USERNAME" ] || [ -z "$REGISTRY_PASSWORD" ]; then
+            echo "::error::Coolify registry secrets (REGISTRY_URL, REGISTRY_USERNAME, REGISTRY_PASSWORD) must be configured in repository secrets."
+            exit 1
+          fi
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Coolify container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/happypaws-api:latest
+            ${{ secrets.REGISTRY_URL }}/happypaws-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify API deployment
+        env:
+          COOLIFY_API_WEBHOOK: ${{ secrets.COOLIFY_API_WEBHOOK }}
+        run: |
+          if [ -n "$COOLIFY_API_WEBHOOK" ]; then
+            curl -fsS -X POST "$COOLIFY_API_WEBHOOK"
+            echo "API deployment triggered successfully."
+          else
+            echo "::warning::COOLIFY_API_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
+          fi
+
+  deploy-web:
+    name: Build and deploy Web (ARM64)
+    if: github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'web') || github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate registry credentials
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          if [ -z "$REGISTRY_URL" ] || [ -z "$REGISTRY_USERNAME" ] || [ -z "$REGISTRY_PASSWORD" ]; then
+            echo "::error::Coolify registry secrets (REGISTRY_URL, REGISTRY_USERNAME, REGISTRY_PASSWORD) must be configured in repository secrets."
+            exit 1
+          fi
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Coolify container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          platforms: linux/arm64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.API_BASE_URL || 'https://api.happypawsnetwork.com' }}
+            NEXT_PUBLIC_APP_URL=${{ vars.APP_URL || 'https://happypawsnetwork.com' }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/happypaws-web:latest
+            ${{ secrets.REGISTRY_URL }}/happypaws-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify Web deployment
+        env:
+          COOLIFY_WEB_WEBHOOK: ${{ secrets.COOLIFY_WEB_WEBHOOK }}
+        run: |
+          if [ -n "$COOLIFY_WEB_WEBHOOK" ]; then
+            curl -fsS -X POST "$COOLIFY_WEB_WEBHOOK"
+            echo "Web deployment triggered successfully."
+          else
+            echo "::warning::COOLIFY_WEB_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
+          fi
+
+  deploy-mobile:
+    name: Build, Sign, and Publish APK
+    if: github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'mobile') || github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.x"
+          channel: "stable"
+          cache: true
+
+      - name: Generate mobile environment configuration
+        working-directory: apps/mobile
+        run: |
+          cat <<EOF > .env
+          API_BASE_URL=${{ vars.API_BASE_URL || 'https://api.happypawsnetwork.com' }}
+          GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          EOF
+
+      - name: Decode Android release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > apps/mobile/android/app/upload-keystore.jks
+          else
+            echo "::warning::ANDROID_KEYSTORE_BASE64 is empty. Using debug signing key fallback."
+          fi
+
+      - name: Install Flutter dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: apps/mobile
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: flutter build apk --release
+
+      - name: Publish APK to Cloudflare R2 CDN
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ] && [ -n "$R2_ACCOUNT_ID" ] && [ -n "$R2_BUCKET_NAME" ]; then
+            ENDPOINT_URL="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+            APK_SOURCE="apps/mobile/build/app/outputs/flutter-apk/app-release.apk"
+
+            aws s3 cp "$APK_SOURCE" "s3://${R2_BUCKET_NAME}/downloads/happypaws.apk" \
+              --endpoint-url "$ENDPOINT_URL" \
+              --content-type "application/vnd.android.package-archive"
+
+            VERSION_TAG="${{ github.sha }}"
+            aws s3 cp "$APK_SOURCE" "s3://${R2_BUCKET_NAME}/downloads/happypaws-${VERSION_TAG}.apk" \
+              --endpoint-url "$ENDPOINT_URL" \
+              --content-type "application/vnd.android.package-archive"
+
+            echo "================================================="
+            echo "Mobile app published to Cloudflare R2 CDN:"
+            echo "https://cdn.happypawsnetwork.com/downloads/happypaws.apk"
+            echo "================================================="
+          else
+            echo "::warning::Cloudflare R2 secrets are not configured. APK built successfully but was not uploaded to CDN."
+          fi
