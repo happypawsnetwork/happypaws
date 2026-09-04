@@ -111,7 +111,7 @@ public static class DependencyInjection
         var uri = new Uri(connectionString);
         var userInfo = uri.UserInfo.Split(':');
         var username = userInfo.Length > 1 ? userInfo[0] : "";
-        var password = userInfo.Length > 1 ? userInfo[1] : (userInfo.Length == 1 && !string.IsNullOrEmpty(userInfo[0]) ? userInfo[0] : ""); 
+        var password = userInfo.Length > 1 ? userInfo[1] : (userInfo.Length == 1 && !string.IsNullOrEmpty(userInfo[0]) ? userInfo[0] : "");
 
         var options = new StackExchange.Redis.ConfigurationOptions
         {
