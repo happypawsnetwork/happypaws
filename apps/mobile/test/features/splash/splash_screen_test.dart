@@ -8,6 +8,9 @@ import 'package:mobile/features/splash/presentation/widgets/connection_error_bot
 import 'package:mobile/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:mobile/features/auth/domain/models/auth_models.dart';
 import 'package:mobile/core/network/api_exceptions.dart';
+import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
+
+import '../../helpers/mock_geolocator_platform.dart';
 
 class FakeAuthRepository implements IAuthRepository {
   bool isOnline = true;
@@ -106,6 +109,10 @@ void main() {
   }
 
   group('SplashScreen tests', () {
+    setUp(() {
+      GeolocatorPlatform.instance = MockGeolocatorPlatform();
+    });
+
     testWidgets('renders splash screen and transitions when unauthenticated', (
       WidgetTester tester,
     ) async {

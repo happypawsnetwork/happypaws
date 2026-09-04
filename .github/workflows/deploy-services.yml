@@ -33,6 +33,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate registry credentials
+        run: |
+          if [ -z "${{ secrets.REGISTRY_URL }}" ] || [ -z "${{ secrets.REGISTRY_USERNAME }}" ] || [ -z "${{ secrets.REGISTRY_PASSWORD }}" ]; then
+            echo "::error::Coolify registry secrets (REGISTRY_URL, REGISTRY_USERNAME, REGISTRY_PASSWORD) must be configured in repository secrets."
+            exit 1
+          fi
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -60,8 +67,17 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Coolify API deployment
+        if: ${{ secrets.COOLIFY_API_WEBHOOK != '' }}
         run: |
           curl -fsS -X POST "${{ secrets.COOLIFY_API_WEBHOOK }}"
+
+      - name: Report deployment status
+        run: |
+          if [ -z "${{ secrets.COOLIFY_API_WEBHOOK }}" ]; then
+            echo "::warning::COOLIFY_API_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
+          else
+            echo "API deployment triggered successfully."
+          fi
 
   deploy-web:
     name: Build and deploy Web (ARM64)
@@ -71,6 +87,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate registry credentials
+        run: |
+          if [ -z "${{ secrets.REGISTRY_URL }}" ] || [ -z "${{ secrets.REGISTRY_USERNAME }}" ] || [ -z "${{ secrets.REGISTRY_PASSWORD }}" ]; then
+            echo "::error::Coolify registry secrets (REGISTRY_URL, REGISTRY_USERNAME, REGISTRY_PASSWORD) must be configured in repository secrets."
+            exit 1
+          fi
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -103,5 +126,14 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Coolify Web deployment
+        if: ${{ secrets.COOLIFY_WEB_WEBHOOK != '' }}
         run: |
           curl -fsS -X POST "${{ secrets.COOLIFY_WEB_WEBHOOK }}"
+
+      - name: Report deployment status
+        run: |
+          if [ -z "${{ secrets.COOLIFY_WEB_WEBHOOK }}" ]; then
+            echo "::warning::COOLIFY_WEB_WEBHOOK is not configured. Container image was pushed, but automated redeploy trigger was skipped."
+          else
+            echo "Web deployment triggered successfully."
+          fi

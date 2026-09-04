@@ -11,7 +11,11 @@ import 'package:mobile/features/profile/presentation/controllers/profile_control
 import 'package:mobile/features/community/domain/models/post.dart';
 import 'package:mobile/features/community/domain/repositories/i_post_repository.dart';
 import 'package:mobile/features/community/presentation/controllers/community_controller.dart';
+import 'package:mobile/features/community/presentation/screens/nearby_rescue_map_screen.dart';
 import 'package:mobile/features/messaging/presentation/controllers/chat_controller.dart';
+import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
+
+import '../../../helpers/mock_geolocator_platform.dart';
 
 class MockAuthRepository implements IAuthRepository {
   UserProfile? mockProfile;
@@ -177,6 +181,10 @@ void main() {
   }
 
   group('MainLayoutScreen navigation bar', () {
+    setUp(() {
+      GeolocatorPlatform.instance = MockGeolocatorPlatform();
+    });
+
     testWidgets('renders all navigation icons and add button', (
       WidgetTester tester,
     ) async {
@@ -233,7 +241,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Nearby content should be visible
-      expect(find.text('Nearby'), findsWidgets);
+      expect(find.byType(NearbyRescueMapScreen), findsOneWidget);
+      expect(find.byIcon(Icons.location_on), findsOneWidget);
     });
 
     testWidgets(
@@ -307,7 +316,15 @@ void main() {
         await tester.tap(find.byTooltip('Profile'));
         await tester.pumpAndSettle();
 
-        // Find Notifications list tile in profile
+        // Scroll until Notifications list tile is visible in profile list
+        final notificationsItem = find.text('Notifications');
+        await tester.scrollUntilVisible(
+          notificationsItem,
+          200,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.pumpAndSettle();
+
         final profileNotificationsTile = find.widgetWithText(
           ListTile,
           'Notifications',

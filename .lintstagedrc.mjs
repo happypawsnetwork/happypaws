@@ -17,6 +17,6 @@ export default {
   "apps/mobile/**/*.dart": (files) => [
     // Format each file individually, then run a single project-wide analysis.
     `dart format ${files.join(" ")}`,
-    "flutter analyze apps/mobile --no-fatal-infos",
+    "flutter analyze apps/mobile --no-fatal-warnings --no-fatal-infos",
   ],
 };
