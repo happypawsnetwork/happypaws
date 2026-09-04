@@ -1,4 +1,4 @@
-# Mobile coding style (Flutter 3.24 and Dart 3)
+# Mobile coding style (Flutter 3.47 and Dart 3)
 
 These rules apply to all Dart and Flutter code written for `happypaws-mobile` (`apps/mobile/`). Following them maintains high performance, strong security, smooth frame rates, and maintainable layered architecture across iOS, Android, and web targets.
 

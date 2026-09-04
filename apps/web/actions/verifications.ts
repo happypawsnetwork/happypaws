@@ -14,12 +14,32 @@ async function getAuthHeader(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+export interface AdminVerificationDocument {
+  documentType: string;
+  presignedUrl: string;
+}
+
+export interface AdminVerification {
+  id: number;
+  userId: number;
+  userName: string;
+  requestedRole: string;
+  status: string;
+  createdAt: string;
+  documents: AdminVerificationDocument[];
+}
+
+export interface AdminVerificationListResponse {
+  items: AdminVerification[];
+  totalCount: number;
+}
+
 export async function getVerificationsAction(params: {
   status?: string;
   role?: string;
   page?: number;
   limit?: number;
-}) {
+}): Promise<AdminVerificationListResponse> {
   const authHeader = await getAuthHeader();
   const query = new URLSearchParams();
 
@@ -40,7 +60,11 @@ export async function getVerificationsAction(params: {
   });
 
   if (!res.ok) return { items: [], totalCount: 0 };
-  return await res.json();
+  const data = await res.json();
+  return {
+    items: data.items || [],
+    totalCount: data.totalCount ?? data.total ?? 0,
+  };
 }
 
 export async function approveVerificationAction(id: number) {

@@ -31,7 +31,7 @@ public static class GetNearbyFeed
             .Include(p => p.Author)
             .Include(p => p.Media)
             .Where(p => !p.IsDeleted && p.LocationPoint != null)
-            .Where(p => p.LocationPoint.IsWithinDistance(searchPoint, radiusMetres))
+            .Where(p => p.LocationPoint!.IsWithinDistance(searchPoint, radiusMetres))
             .Where(p => !(p.Type == PostType.RescueAlert && p.Status == PostStatus.Completed))
             .Where(p => !(p.Type == PostType.AdoptionListing && p.Status == PostStatus.Completed))
             .Where(p => !(p.Type == PostType.SponsorshipRequest && (p.Status == PostStatus.PendingApproval || p.Status == PostStatus.Rejected || p.Status == PostStatus.Cancelled)));

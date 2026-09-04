@@ -58,7 +58,7 @@ export function RescueUrgencyCell({ post }: RescueUrgencyCellProps) {
               </svg>
             </button>
             <UrgencyAssessmentCard
-              postId={post.id}
+              postId={String(post.id)}
               urgencyLevel={post.urgencyLevel}
               aiTriageReason={post.aiTriageReason}
               isUrgencyManuallyOverridden={post.isUrgencyManuallyOverridden}

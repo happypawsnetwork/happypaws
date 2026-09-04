@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Turborepo-Monorepo-EF4444?style=flat&logo=turborepo&labelColor=171717" alt="Turborepo Workspace" />
   <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat&logo=nextdotjs&labelColor=171717" alt="Next.js" />
   <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=flat&logo=dotnet&labelColor=171717" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/Flutter-3.24-02569B?style=flat&logo=flutter&labelColor=171717" alt="Flutter" />
+  <img src="https://img.shields.io/badge/Flutter-3.47-02569B?style=flat&logo=flutter&labelColor=171717" alt="Flutter" />
   <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?style=flat&logo=postgresql&labelColor=171717" alt="PostgreSQL" />
 </p>
 
@@ -26,7 +26,7 @@ happypaws/
 ├── apps/
 │   ├── api/        # ASP.NET Core 10 (Clean Architecture REST + SignalR)
 │   ├── web/        # Next.js 16 (Admin Dashboard and Public Web)
-│   └── mobile/     # Flutter 3.24 (iOS and Android Client)
+│   └── mobile/     # Flutter 3.47 (iOS and Android Client)
 ├── shared/         # Shared resources (OpenAPI specs and cross-app models)
 ├── docs/           # Architecture diagrams, user stories, and feature specs
 ├── docker-compose.yml # Local infrastructure (PostgreSQL, Valkey, MinIO)
@@ -44,7 +44,7 @@ For project-specific documentation and local setup details, refer to the individ
 Install the following tools before starting local development:
 - **Node.js** (v20+) and **pnpm** (`npm install -g pnpm`)
 - **.NET 10 SDK**
-- **Flutter SDK** (v3.24+)
+- **Flutter SDK** (v3.47+)
 - **Docker** and **Docker Compose**
 
 After cloning the repository, install workspace dependencies:

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../../../core/theme/app_colors.dart';
 
 import 'package:provider/provider.dart';
 
 import '../../../controllers/create_post_controller.dart';
-
 
 import '../../../widgets/create_post_app_bar.dart';
 
@@ -24,8 +22,6 @@ class _TransportDetailsScreenState extends State<TransportDetailsScreen> {
   late final TextEditingController _descController;
   late final TextEditingController _speciesController;
   late final TextEditingController _nameController;
-
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -71,46 +67,8 @@ class _TransportDetailsScreenState extends State<TransportDetailsScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImages() async {
-    final controller = context.read<CreatePostController>();
-    if (controller.photos.length >= 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 4 photos allowed.')),
-      );
-      return;
-    }
-
-    try {
-      final List<XFile> selectedImages = await _picker.pickMultiImage();
-      if (selectedImages.isNotEmpty) {
-        setState(() {
-          int availableSlots = 4 - controller.photos.length;
-          final imagesToAdd = selectedImages
-              .take(availableSlots)
-              .map((e) => e.path)
-              .toList();
-          controller.photos.addAll(imagesToAdd);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to pick images.')));
-      }
-    }
-  }
-
-  void _removeImage(int index) {
-    setState(() {
-      context.read<CreatePostController>().photos.removeAt(index);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<CreatePostController>();
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CreatePostAppBar(),

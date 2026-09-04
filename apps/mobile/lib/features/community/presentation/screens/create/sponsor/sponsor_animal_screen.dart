@@ -38,12 +38,6 @@ class _SponsorAnimalScreenState extends State<SponsorAnimalScreen> {
     super.dispose();
   }
 
-  void _getLocation() {
-    setState(() {
-      _locationController.text = 'Colombo, Sri Lanka'; // Stub
-    });
-  }
-
   void _onNext() {
     final controller = context.read<CreatePostController>();
     controller.species = _speciesController.text.trim();

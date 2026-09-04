@@ -1,5 +1,9 @@
 import { NoContentPlaceholder } from "@/components/admin/NoContentPlaceholder";
-import { getVerificationsAction } from "@/actions/verifications";
+import {
+  getVerificationsAction,
+  type AdminVerification,
+  type AdminVerificationDocument,
+} from "@/actions/verifications";
 import { VerificationActionButtons } from "./VerificationActionButtons";
 import Link from "next/link";
 
@@ -117,7 +121,7 @@ export default async function VerificationsPage({ searchParams }: PageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 text-slate-900">
-              {verifications.map((v) => (
+              {verifications.map((v: AdminVerification) => (
                 <tr key={v.id} className="hover:bg-slate-50/50">
                   <td className="px-6 py-4 font-medium">
                     <Link
@@ -135,30 +139,32 @@ export default async function VerificationsPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-2">
-                      {v.documents.map((doc, i: number) => (
-                        <a
-                          key={i}
-                          href={doc.presignedUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                        >
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      {v.documents.map(
+                        (doc: AdminVerificationDocument, i: number) => (
+                          <a
+                            key={i}
+                            href={doc.presignedUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            ></path>
-                          </svg>
-                          {doc.documentType}
-                        </a>
-                      ))}
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              ></path>
+                            </svg>
+                            {doc.documentType}
+                          </a>
+                        ),
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

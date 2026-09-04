@@ -69,7 +69,6 @@ class _SelectLocationMapScreenState extends State<SelectLocationMapScreen> {
 
   void _onCameraIdle() async {
     final GoogleMapController controller = await _controller.future;
-    final double zoom = await controller.getZoomLevel();
     // Getting the center coordinates
     final LatLngBounds bounds = await controller.getVisibleRegion();
     final double lat =

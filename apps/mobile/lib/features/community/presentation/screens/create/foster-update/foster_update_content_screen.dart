@@ -34,13 +34,6 @@ class _FosterUpdateContentScreenState extends State<FosterUpdateContentScreen> {
     super.dispose();
   }
 
-  void _updateState() {
-    final controller = context.read<CreatePostController>();
-    controller.title = _titleController.text.trim();
-    controller.body = _bodyController.text.trim();
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool canProceed =

@@ -7,9 +7,9 @@ import { useRouter } from "next/navigation";
 
 interface UrgencyAssessmentCardProps {
   postId: string;
-  urgencyLevel?: string;
-  aiTriageReason?: string;
-  isUrgencyManuallyOverridden?: boolean;
+  urgencyLevel?: string | null;
+  aiTriageReason?: string | null;
+  isUrgencyManuallyOverridden?: boolean | null;
 }
 
 export function UrgencyAssessmentCard({
@@ -20,9 +20,10 @@ export function UrgencyAssessmentCard({
 }: UrgencyAssessmentCardProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const currentUrgency = urgencyLevel || "Medium";
 
   const handleUpdate = (level: string) => {
-    if (level === urgencyLevel) return;
+    if (level === currentUrgency) return;
     startTransition(async () => {
       try {
         await updateRescueUrgencyAction(postId, level);
@@ -72,9 +73,9 @@ export function UrgencyAssessmentCard({
         </div>
 
         <h4
-          className={`text-2xl font-bold mb-3 ${getUrgencyColor(urgencyLevel)}`}
+          className={`text-2xl font-bold mb-3 ${getUrgencyColor(currentUrgency)}`}
         >
-          {urgencyLevel} urgency
+          {currentUrgency} urgency
         </h4>
 
         <p className="text-slate-700 leading-relaxed">
@@ -86,7 +87,7 @@ export function UrgencyAssessmentCard({
         <p className="text-slate-500 text-sm mb-3">Not right? Adjust below.</p>
         <div className="flex flex-wrap gap-2">
           {options.map((option) => {
-            const isSelected = option === urgencyLevel;
+            const isSelected = option === currentUrgency;
             return (
               <button
                 key={option}

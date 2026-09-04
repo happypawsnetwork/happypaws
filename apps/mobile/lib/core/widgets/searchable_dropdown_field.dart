@@ -52,8 +52,9 @@ class SearchableDropdownField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasValue = value != null && value!.isNotEmpty;
-    final displayText =
-        enabled ? (hasValue ? value! : hintText) : (disabledHint ?? hintText);
+    final displayText = enabled
+        ? (hasValue ? value! : hintText)
+        : (disabledHint ?? hintText);
 
     return MergeSemantics(
       child: Column(
@@ -86,8 +87,8 @@ class SearchableDropdownField extends StatelessWidget {
                   border: Border.all(
                     color: enabled
                         ? (hasValue
-                            ? AppColors.primary
-                            : const Color(0xFFCBD5E1))
+                              ? AppColors.primary
+                              : const Color(0xFFCBD5E1))
                         : const Color(0xFFE2E8F0),
                     width: 1.2,
                   ),
@@ -109,12 +110,13 @@ class SearchableDropdownField extends StatelessWidget {
                         displayText,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight:
-                              hasValue ? FontWeight.w500 : FontWeight.w400,
+                          fontWeight: hasValue
+                              ? FontWeight.w500
+                              : FontWeight.w400,
                           color: enabled
                               ? (hasValue
-                                  ? AppColors.textPrimary
-                                  : const Color(0xFF94A3B8))
+                                    ? AppColors.textPrimary
+                                    : const Color(0xFF94A3B8))
                               : const Color(0xFF94A3B8),
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -282,7 +284,7 @@ class _SearchablePickerSheetState extends State<_SearchablePickerSheet> {
                 : ListView.separated(
                     shrinkWrap: true,
                     itemCount: _filteredItems.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (_, _) =>
                         const Divider(height: 1, color: Color(0xFFF1F5F9)),
                     itemBuilder: (context, index) {
                       final item = _filteredItems[index];

@@ -6,6 +6,7 @@ export default {
     `prettier --write ${files.join(" ")}`,
     `apps/web/node_modules/.bin/eslint --fix --no-warn-ignored --config apps/web/eslint.config.mjs ${files.join(" ")}`,
     "pnpm --filter web lint",
+    "pnpm --filter web typecheck",
   ],
 
   "apps/api/**/*.cs": (files) => [

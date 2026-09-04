@@ -24,19 +24,6 @@ class _SponsorProofScreenState extends State<SponsorProofScreen> {
     _docs = List.from(controller.sponsorProofDocs);
   }
 
-  void _pickDocs() {
-    if (_docs.length >= 5) return;
-    setState(() {
-      _docs.add('mock_proof_document_${_docs.length + 1}.pdf');
-    });
-  }
-
-  void _removeDoc(int index) {
-    setState(() {
-      _docs.removeAt(index);
-    });
-  }
-
   void _onNext() {
     final controller = context.read<CreatePostController>();
     controller.sponsorProofDocs = List.from(_docs);

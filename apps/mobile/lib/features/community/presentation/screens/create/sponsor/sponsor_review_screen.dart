@@ -7,6 +7,7 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../controllers/create_post_controller.dart';
 import '../../../../domain/models/post.dart';
 import '../../../../domain/models/sponsorship_details.dart';
+import '../../../widgets/post_card.dart';
 import '../../../widgets/create_post_app_bar.dart';
 
 class SponsorReviewScreen extends StatefulWidget {
@@ -17,15 +18,16 @@ class SponsorReviewScreen extends StatefulWidget {
 }
 
 class _SponsorReviewScreenState extends State<SponsorReviewScreen> {
-  void _submit() async {
+  Future<void> _submit() async {
     final controller = context.read<CreatePostController>();
     await controller.submitPost();
+
     if (mounted) {
       if (controller.state == CreatePostState.success) {
-        context.go('/community/create/success'); // go to community feed
+        context.go('/community/create/success');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Your post has been submitted for review.'),
+            content: Text('Your sponsorship request has been submitted.'),
           ),
         );
       } else if (controller.state == CreatePostState.error) {
@@ -72,7 +74,39 @@ class _SponsorReviewScreenState extends State<SponsorReviewScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CreatePostAppBar(),
-      body: Container(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                'Review and post',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                'This is how your sponsorship request will look in the feed.',
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            PostCard(post: mockPost),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [

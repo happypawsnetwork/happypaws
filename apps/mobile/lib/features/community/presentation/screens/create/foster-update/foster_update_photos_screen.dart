@@ -1,12 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../controllers/create_post_controller.dart';
 import '../../../widgets/create_post_app_bar.dart';
 
 class FosterUpdatePhotosScreen extends StatefulWidget {
@@ -18,35 +14,8 @@ class FosterUpdatePhotosScreen extends StatefulWidget {
 }
 
 class _FosterUpdatePhotosScreenState extends State<FosterUpdatePhotosScreen> {
-  final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final controller = context.read<CreatePostController>();
-    if (controller.photos.length >= 4) return;
-
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() {
-          controller.photos.add(image.path);
-        });
-      }
-    } catch (e) {
-      // Ignore
-    }
-  }
-
-  void _removeImage(int index) {
-    final controller = context.read<CreatePostController>();
-    setState(() {
-      controller.photos.removeAt(index);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<CreatePostController>();
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CreatePostAppBar(),

@@ -204,7 +204,34 @@ export async function getTransportsAction(params: { status?: string }) {
   return { items };
 }
 
-export async function getSponsorshipsAction(params: { status?: string }) {
+export interface AdminSponsorshipDetails {
+  goalDescription?: string;
+  estimatedAmountLkr?: number;
+  adminRejectionNotes?: string | null;
+  fundedAt?: string | null;
+  proofDocumentsCount?: number;
+}
+
+export interface AdminSponsorshipItem {
+  id: string;
+  title: string;
+  body?: string;
+  authorDisplayName?: string;
+  authorName?: string;
+  author?: { name?: string };
+  sponsorshipDetails?: AdminSponsorshipDetails | null;
+  goalDescription?: string;
+  estimatedAmount?: number;
+  photoCount?: number;
+  media?: Array<{ id?: string; cdnUrl?: string }>;
+  proofDocumentsCount?: number;
+  submittedAt?: string;
+  createdAt?: string;
+}
+
+export async function getSponsorshipsAction(params: {
+  status?: string;
+}): Promise<{ items: AdminSponsorshipItem[] }> {
   const authHeader = await getAuthHeader();
   const query = new URLSearchParams();
   if (params.status && params.status !== "All")
@@ -219,7 +246,9 @@ export async function getSponsorshipsAction(params: { status?: string }) {
   );
   if (!res.ok) return { items: [] };
   const data = await res.json();
-  const items = Array.isArray(data) ? data : data.items || [];
+  const items: AdminSponsorshipItem[] = Array.isArray(data)
+    ? data
+    : data.items || [];
   return { items };
 }
 

@@ -24,19 +24,6 @@ class _SponsorPhotosScreenState extends State<SponsorPhotosScreen> {
     _photos = List.from(controller.photos);
   }
 
-  void _pickPhotos() {
-    if (_photos.length >= 4) return;
-    setState(() {
-      _photos.add('mock_photo_path_${_photos.length + 1}.jpg');
-    });
-  }
-
-  void _removePhoto(int index) {
-    setState(() {
-      _photos.removeAt(index);
-    });
-  }
-
   void _onNext() {
     final controller = context.read<CreatePostController>();
     controller.photos = List.from(_photos);

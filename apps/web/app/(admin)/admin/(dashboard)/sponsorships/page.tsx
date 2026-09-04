@@ -1,4 +1,7 @@
-import { getSponsorshipsAction } from "@/actions/community";
+import {
+  getSponsorshipsAction,
+  type AdminSponsorshipItem,
+} from "@/actions/community";
 import { CommunityNav } from "@/components/admin/CommunityNav";
 import { SponsorshipTabs } from "./sponsorship-tabs";
 import { SponsorshipActions, ViewDocsButton } from "./sponsorship-actions";
@@ -95,7 +98,7 @@ export default async function AdminSponsorshipsPage(props: {
                   </td>
                 </tr>
               ) : (
-                sponsorships.map((sponsorship) => {
+                sponsorships.map((sponsorship: AdminSponsorshipItem) => {
                   const goalDescription =
                     sponsorship.sponsorshipDetails?.goalDescription ||
                     sponsorship.goalDescription ||
@@ -128,11 +131,11 @@ export default async function AdminSponsorshipsPage(props: {
                       </td>
                       <td
                         className="max-w-xs px-5 py-4 text-xs text-slate-500"
-                        title={goalDescription}
+                        title={goalDescription || ""}
                       >
-                        {goalDescription?.length > 80
+                        {goalDescription && goalDescription.length > 80
                           ? `${goalDescription.substring(0, 80)}...`
-                          : goalDescription}
+                          : goalDescription || ""}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 text-sm font-medium text-slate-900">
                         {estimatedAmount

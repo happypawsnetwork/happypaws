@@ -24,7 +24,7 @@ This repository contains multiple applications built on different technology sta
 
 - **API (ASP.NET Core 10)**: Before touching anything in `apps/api/`, read and strictly enforce [API coding style](docs/standards/coding-style.md). It mandates Clean Architecture, Minimal APIs, TypedResults, Scalar OpenAPI metadata, and specific EF Core patterns.
 - **Web (Next.js 16)**: Before touching anything in `apps/web/`, read [Web coding style](.agents/rules/coding-style-web.md). It mandates Server Components by default, Zod-validated Server Actions, route-gating middleware, and accessibility standards.
-- **Mobile (Flutter 3.24)**: Before touching anything in `apps/mobile/`, read [Mobile coding style](.agents/rules/coding-style-mobile.md). It mandates clean feature-first layering, secure token storage caching, explicit controller disposal, and responsive widget design.
+- **Mobile (Flutter 3.47)**: Before touching anything in `apps/mobile/`, read [Mobile coding style](.agents/rules/coding-style-mobile.md). It mandates clean feature-first layering, secure token storage caching, explicit controller disposal, and responsive widget design.
 
 ## Domain knowledge and architecture context
 
