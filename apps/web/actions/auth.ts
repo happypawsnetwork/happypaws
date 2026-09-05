@@ -11,30 +11,116 @@ const ACCESS_TOKEN_MAX_AGE = 15 * 60; // 15 mins
 const REMEMBER_ME_REFRESH_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
 const STANDARD_REFRESH_MAX_AGE = 24 * 60 * 60; // 24 hours
 
+export type LoginActionResult =
+  | { success: true; devBypass: true }
+  | {
+      success: true;
+      devBypass: false;
+      verificationToken: string;
+      expiresIn: number;
+    }
+  | { success: false; error: string };
+
+export type VerifyOtpActionResult =
+  { success: true } | { success: false; error: string };
+
 export async function loginAction(
   email: string,
   password: string,
   rememberMe = false,
-) {
-  const res = await fetch(`${API_URL}/api/auth/admin/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, rememberMe }),
-  });
+): Promise<LoginActionResult> {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, rememberMe }),
+    });
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => null);
-    throw new Error(error?.detail || "Invalid credentials");
+    if (res.status === 429) {
+      return {
+        success: false,
+        error: "Too many attempts. Please try again in a few minutes.",
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: "Invalid email or password.",
+      };
+    }
+
+    const data = await res.json();
+
+    if (data.devBypass) {
+      const cookieStore = await cookies();
+      const refreshMaxAge =
+        data.refreshExpiresIn ??
+        (rememberMe ? REMEMBER_ME_REFRESH_MAX_AGE : STANDARD_REFRESH_MAX_AGE);
+
+      cookieStore.set("access_token", data.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+        path: "/",
+      });
+
+      cookieStore.set("refresh_token", data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: refreshMaxAge,
+        path: "/",
+      });
+
+      return { success: true, devBypass: true };
+    }
+
+    return {
+      success: true,
+      devBypass: false,
+      verificationToken: data.verificationToken,
+      expiresIn: data.expiresIn ?? 300,
+    };
+  } catch {
+    return {
+      success: false,
+      error: "Unable to connect to the server. Please try again later.",
+    };
   }
+}
 
-  const data = await res.json();
+export async function verifyOtpAction(
+  verificationToken: string,
+  otpCode: string,
+): Promise<VerifyOtpActionResult> {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/admin/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ verificationToken, otpCode }),
+    });
 
-  if (data.devBypass) {
+    if (res.status === 429) {
+      return {
+        success: false,
+        error: "Too many failed attempts. Please request a new code.",
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: "Invalid or expired verification code.",
+      };
+    }
+
+    const data = await res.json();
     const cookieStore = await cookies();
-    const refreshMaxAge =
-      data.refreshExpiresIn ||
-      (rememberMe ? REMEMBER_ME_REFRESH_MAX_AGE : STANDARD_REFRESH_MAX_AGE);
+    const refreshMaxAge = data.refreshExpiresIn ?? STANDARD_REFRESH_MAX_AGE;
 
+    // Set the Access Token (needed for Server Components to call backend APIs)
     cookieStore.set("access_token", data.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -43,6 +129,7 @@ export async function loginAction(
       path: "/",
     });
 
+    // Set the Refresh Token (HttpOnly)
     cookieStore.set("refresh_token", data.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -51,50 +138,13 @@ export async function loginAction(
       path: "/",
     });
 
-    return { devBypass: true };
+    return { success: true };
+  } catch {
+    return {
+      success: false,
+      error: "Unable to connect to the server. Please try again later.",
+    };
   }
-
-  return data;
-}
-
-export async function verifyOtpAction(
-  verificationToken: string,
-  otpCode: string,
-) {
-  const res = await fetch(`${API_URL}/api/auth/admin/verify-otp`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ verificationToken, otpCode }),
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => null);
-    throw new Error(error?.detail || "Invalid OTP");
-  }
-
-  const data = await res.json();
-  const cookieStore = await cookies();
-  const refreshMaxAge = data.refreshExpiresIn ?? STANDARD_REFRESH_MAX_AGE;
-
-  // Set the Access Token (needed for Server Components to call backend APIs)
-  cookieStore.set("access_token", data.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: ACCESS_TOKEN_MAX_AGE,
-    path: "/",
-  });
-
-  // Set the Refresh Token (HttpOnly)
-  cookieStore.set("refresh_token", data.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: refreshMaxAge,
-    path: "/",
-  });
-
-  return { success: true };
 }
 
 export async function refreshAction() {
