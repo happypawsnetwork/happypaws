@@ -22,6 +22,9 @@ RUN dotnet publish "HappyPaws.Api.csproj" -c Release -o /app/publish /p:UseAppHo
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+# Install curl for container health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 # The default port for ASP.NET Core containers is 8080
 EXPOSE 8080
 
