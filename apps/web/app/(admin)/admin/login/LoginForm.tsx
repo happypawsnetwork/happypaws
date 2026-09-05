@@ -100,6 +100,7 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
 
   // OTP State
@@ -150,7 +151,7 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const data = await loginAction(email, password);
+      const data = await loginAction(email, password, rememberMe);
 
       if (data.devBypass) {
         router.push("/admin");
@@ -272,15 +273,18 @@ export default function LoginForm() {
   };
 
   const inputClassName =
-    "w-full bg-[#1E1E24]/30 border border-white/10 rounded-lg px-4 py-3.5 text-white placeholder-white/40 placeholder:font-light focus:outline-none focus:ring-2 focus:ring-[#4CE5E5]/50 focus:border-[#4CE5E5] transition-all duration-300 " +
-    "[&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]";
+    "w-full bg-[#1E1E24]/30 border border-white/10 rounded-lg px-4 py-3.5 text-white caret-[#4CE5E5] [color-scheme:dark] placeholder-white/40 placeholder:font-light focus:outline-none focus:ring-2 focus:ring-[#4CE5E5]/50 focus:border-[#4CE5E5] transition-all duration-300 " +
+    "[&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white!important] [&:-webkit-autofill:hover]:[-webkit-text-fill-color:white!important] [&:-webkit-autofill:focus]:[-webkit-text-fill-color:white!important] [&:-webkit-autofill:active]:[-webkit-text-fill-color:white!important] " +
+    "[&:-webkit-autofill]:[box-shadow:0_0_0_1000px_#1E1E24_inset!important] [&:-webkit-autofill:hover]:[box-shadow:0_0_0_1000px_#1E1E24_inset!important] [&:-webkit-autofill:focus]:[box-shadow:0_0_0_1000px_#1E1E24_inset!important] [&:-webkit-autofill:active]:[box-shadow:0_0_0_1000px_#1E1E24_inset!important] " +
+    "[&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full bg-black/20 backdrop-blur-3xl border border-white/15 rounded-xl pt-12 pb-6 px-8 sm:pt-14 sm:pb-7 sm:px-10 shadow-2xl shadow-black/80 overflow-hidden relative"
+      style={{ colorScheme: "dark" }}
+      className="w-full bg-black/20 backdrop-blur-3xl border border-white/15 rounded-xl pt-12 pb-6 px-8 sm:pt-14 sm:pb-7 sm:px-10 shadow-2xl shadow-black/80 overflow-hidden relative [color-scheme:dark]"
     >
       <div className="flex flex-col items-center text-center mb-8">
         <Image
@@ -335,7 +339,8 @@ export default function LoginForm() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
             onSubmit={(e) => handleLogin(e, false)}
-            className="space-y-5"
+            style={{ colorScheme: "dark" }}
+            className="space-y-5 [color-scheme:dark]"
           >
             <div>
               <label
@@ -347,10 +352,12 @@ export default function LoginForm() {
               <input
                 id="email"
                 type="email"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
+                style={{ colorScheme: "dark" }}
                 className={inputClassName}
               />
             </div>
@@ -366,10 +373,12 @@ export default function LoginForm() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
+                  style={{ colorScheme: "dark" }}
                   className={inputClassName}
                 />
                 <button
@@ -385,6 +394,49 @@ export default function LoginForm() {
                   )}
                 </button>
               </div>
+            </div>
+
+            <div className="pt-1">
+              <label className="inline-flex items-center gap-3 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div
+                  className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-[#4CE5E5]/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#1E1E24] ${
+                    rememberMe
+                      ? "bg-[#4CE5E5] border-[#4CE5E5] text-[#1E1E24] shadow-[0_0_12px_rgba(76,229,229,0.35)]"
+                      : "bg-[#1E1E24]/50 border-white/20 group-hover:border-white/40"
+                  }`}
+                >
+                  <AnimatePresence>
+                    {rememberMe && (
+                      <motion.svg
+                        key="check"
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.5, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-3.5 h-3.5 text-[#1E1E24]"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </motion.svg>
+                    )}
+                  </AnimatePresence>
+                </div>
+                <span className="text-sm text-slate-300 font-normal group-hover:text-white transition-colors">
+                  Remember me for 30 days
+                </span>
+              </label>
             </div>
 
             <button

@@ -22,7 +22,7 @@ public sealed class AuthEndpoints : IEndpointGroup
     {
         var group = app.MapGroup("/api/auth")
             .WithTags("Authentication")
-            .RequireRateLimiting("GlobalPolicy");
+            .RequireRateLimiting("AuthPolicy");
 
         group.MapPost("/mobile/login", MobileLogin)
             .WithName("MobileLogin")
@@ -199,7 +199,7 @@ public sealed class AuthEndpoints : IEndpointGroup
             return TypedResults.Conflict();
         }
 
-        var otp = Random.Shared.Next(100000, 999999).ToString();
+        var otp = OtpHelpers.Generate();
         var verificationToken = Guid.NewGuid();
 
         var cacheOptions = new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions
@@ -245,7 +245,7 @@ public sealed class AuthEndpoints : IEndpointGroup
         }
 
         var parts = cacheValue.Split(':');
-        if (parts.Length != 2 || parts[1] != request.OtpCode)
+        if (parts.Length != 2 || !OtpHelpers.ConstantTimeEquals(parts[1], request.OtpCode))
         {
             logger.LogWarning("[Authentication] Invalid registration OTP submitted for token {Token}", identifier);
             await rateLimitService.RecordFailureAsync(ip, identifier);
@@ -351,7 +351,7 @@ public sealed class AuthEndpoints : IEndpointGroup
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower(), ct);
         if (user is not null)
         {
-            var otp = Random.Shared.Next(100000, 999999).ToString();
+            var otp = OtpHelpers.Generate();
             var cacheOptions = new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
@@ -401,7 +401,7 @@ public sealed class AuthEndpoints : IEndpointGroup
         }
 
         var parts = cacheValue.Split(':');
-        if (parts.Length != 2 || parts[1] != request.OtpCode)
+        if (parts.Length != 2 || !OtpHelpers.ConstantTimeEquals(parts[1], request.OtpCode))
         {
             logger.LogWarning("[Authentication] Invalid forgot password OTP submitted for token {Token}", identifier);
             await rateLimitService.RecordFailureAsync(ip, identifier);

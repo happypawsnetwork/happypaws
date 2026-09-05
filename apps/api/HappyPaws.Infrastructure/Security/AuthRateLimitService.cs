@@ -53,17 +53,11 @@ public class AuthRateLimitService : IAuthRateLimitService
         var ipKey = $"lockout:ip:{ipAddress}";
         var emailKey = $"lockout:email:{email.ToLowerInvariant()}";
 
-        var ipCount = await _db.StringIncrementAsync(ipKey);
-        if (ipCount == 1)
-        {
-            await _db.KeyExpireAsync(ipKey, LockoutDuration);
-        }
+        await _db.StringIncrementAsync(ipKey);
+        await _db.KeyExpireAsync(ipKey, LockoutDuration);
 
-        var emailCount = await _db.StringIncrementAsync(emailKey);
-        if (emailCount == 1)
-        {
-            await _db.KeyExpireAsync(emailKey, LockoutDuration);
-        }
+        await _db.StringIncrementAsync(emailKey);
+        await _db.KeyExpireAsync(emailKey, LockoutDuration);
     }
 
     public async Task ClearFailuresAsync(string ipAddress, string email)

@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { refreshAction } from "./auth";
 
 const API_URL =
   process.env.API_URL ||
@@ -31,26 +32,74 @@ export interface UserSession {
   isActive: boolean;
 }
 
-async function getAuthHeader(): Promise<Record<string, string>> {
+async function authFetch(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<Response> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  let token = cookieStore.get("access_token")?.value;
+
+  if (!token) {
+    try {
+      const refreshed = await refreshAction();
+      token = refreshed.accessToken;
+    } catch {
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
+
+  if (!token) {
+    throw new Error("Session expired. Please log in again.");
+  }
+
+  const performFetch = (bearer: string) => {
+    const headers = new Headers(options.headers);
+    headers.set("Authorization", `Bearer ${bearer}`);
+    return fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  };
+
+  let res = await performFetch(token);
+
+  if (res.status === 401) {
+    try {
+      const refreshed = await refreshAction();
+      res = await performFetch(refreshed.accessToken);
+    } catch {
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
+
+  return res;
+}
+
+async function parseErrorMessage(
+  res: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const data = await res.json();
+    return data.detail || data.title || data.message || fallback;
+  } catch {
+    const text = await res.text().catch(() => "");
+    return text || fallback;
+  }
 }
 
 export async function getProfileAction(): Promise<UserProfile> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile`, {
+  const res = await authFetch("/api/profile", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     next: { revalidate: 0 },
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(`Failed to load profile: ${res.status} ${errorText}`);
+    const err = await parseErrorMessage(res, "Failed to load profile.");
+    throw new Error(err);
   }
 
   return await res.json();
@@ -62,19 +111,20 @@ export async function updateProfileAction(data: {
   phoneNumber?: string | null;
   tagline?: string | null;
 }): Promise<UserProfile> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile`, {
+  const res = await authFetch("/api/profile", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to update profile details.");
+    const err = await parseErrorMessage(
+      res,
+      "Failed to update profile details.",
+    );
+    throw new Error(err);
   }
 
   revalidatePath("/admin");
@@ -85,18 +135,17 @@ export async function updateProfileAction(data: {
 export async function uploadAvatarAction(
   formData: FormData,
 ): Promise<{ avatarUrl: string }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/avatar`, {
+  const res = await authFetch("/api/profile/avatar", {
     method: "POST",
-    headers: {
-      ...authHeader,
-    },
     body: formData,
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to upload profile picture.");
+    const err = await parseErrorMessage(
+      res,
+      "Failed to upload profile picture.",
+    );
+    throw new Error(err);
   }
 
   revalidatePath("/admin");
@@ -105,18 +154,16 @@ export async function uploadAvatarAction(
 }
 
 export async function deleteAvatarAction(): Promise<UserProfile> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/avatar`, {
+  const res = await authFetch("/api/profile/avatar", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to remove avatar.");
+    const err = await parseErrorMessage(res, "Failed to remove avatar.");
+    throw new Error(err);
   }
 
   revalidatePath("/admin");
@@ -127,19 +174,20 @@ export async function deleteAvatarAction(): Promise<UserProfile> {
 export async function sendEmailUpdateCodeAction(
   newEmail: string,
 ): Promise<{ verificationToken: string }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/email/send-code`, {
+  const res = await authFetch("/api/profile/email/send-code", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     body: JSON.stringify({ newEmail }),
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to send verification code.");
+    const err = await parseErrorMessage(
+      res,
+      "Failed to send verification code.",
+    );
+    throw new Error(err);
   }
 
   return await res.json();
@@ -149,19 +197,17 @@ export async function verifyEmailUpdateCodeAction(
   verificationToken: string,
   otpCode: string,
 ): Promise<{ success: boolean }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/email/verify-code`, {
+  const res = await authFetch("/api/profile/email/verify-code", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     body: JSON.stringify({ verificationToken, otpCode }),
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Invalid verification code.");
+    const err = await parseErrorMessage(res, "Invalid verification code.");
+    throw new Error(err);
   }
 
   revalidatePath("/admin");
@@ -173,38 +219,34 @@ export async function changePasswordAction(
   oldPassword: string,
   newPassword: string,
 ): Promise<{ success: boolean }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/password`, {
+  const res = await authFetch("/api/profile/password", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     body: JSON.stringify({ oldPassword, newPassword }),
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to update password.");
+    const err = await parseErrorMessage(res, "Failed to update password.");
+    throw new Error(err);
   }
 
   return { success: true };
 }
 
 export async function getActiveSessionsAction(): Promise<UserSession[]> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/sessions`, {
+  const res = await authFetch("/api/profile/sessions", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
     next: { revalidate: 0 },
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(`Failed to load sessions: ${res.status} ${errorText}`);
+    const err = await parseErrorMessage(res, "Failed to load sessions.");
+    throw new Error(err);
   }
 
   return await res.json();
@@ -213,18 +255,16 @@ export async function getActiveSessionsAction(): Promise<UserSession[]> {
 export async function revokeSessionAction(
   sessionId: string,
 ): Promise<{ success: boolean }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/sessions/${sessionId}`, {
+  const res = await authFetch(`/api/profile/sessions/${sessionId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to revoke session.");
+    const err = await parseErrorMessage(res, "Failed to revoke session.");
+    throw new Error(err);
   }
 
   revalidatePath("/admin/profile");
@@ -234,18 +274,19 @@ export async function revokeSessionAction(
 export async function revokeOtherSessionsAction(): Promise<{
   success: boolean;
 }> {
-  const authHeader = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/profile/sessions/revoke-others`, {
+  const res = await authFetch("/api/profile/sessions/revoke-others", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...authHeader,
     },
   });
 
   if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    throw new Error(errorText || "Failed to revoke other sessions.");
+    const err = await parseErrorMessage(
+      res,
+      "Failed to revoke other sessions.",
+    );
+    throw new Error(err);
   }
 
   revalidatePath("/admin/profile");
