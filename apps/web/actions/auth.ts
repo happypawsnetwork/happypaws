@@ -7,11 +7,19 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:5197";
 
-export async function loginAction(email: string, password: string) {
+const ACCESS_TOKEN_MAX_AGE = 15 * 60; // 15 mins
+const REMEMBER_ME_REFRESH_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
+const STANDARD_REFRESH_MAX_AGE = 24 * 60 * 60; // 24 hours
+
+export async function loginAction(
+  email: string,
+  password: string,
+  rememberMe = false,
+) {
   const res = await fetch(`${API_URL}/api/auth/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, rememberMe }),
   });
 
   if (!res.ok) {
@@ -23,12 +31,15 @@ export async function loginAction(email: string, password: string) {
 
   if (data.devBypass) {
     const cookieStore = await cookies();
+    const refreshMaxAge =
+      data.refreshExpiresIn ||
+      (rememberMe ? REMEMBER_ME_REFRESH_MAX_AGE : STANDARD_REFRESH_MAX_AGE);
 
     cookieStore.set("access_token", data.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 15 * 60, // 15 mins
+      maxAge: ACCESS_TOKEN_MAX_AGE,
       path: "/",
     });
 
@@ -36,7 +47,7 @@ export async function loginAction(email: string, password: string) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 14 * 24 * 60 * 60, // 14 days
+      maxAge: refreshMaxAge,
       path: "/",
     });
 
@@ -63,13 +74,14 @@ export async function verifyOtpAction(
 
   const data = await res.json();
   const cookieStore = await cookies();
+  const refreshMaxAge = data.refreshExpiresIn ?? STANDARD_REFRESH_MAX_AGE;
 
   // Set the Access Token (needed for Server Components to call backend APIs)
   cookieStore.set("access_token", data.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 15 * 60, // 15 mins
+    maxAge: ACCESS_TOKEN_MAX_AGE,
     path: "/",
   });
 
@@ -78,7 +90,7 @@ export async function verifyOtpAction(
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 14 * 24 * 60 * 60, // 14 days
+    maxAge: refreshMaxAge,
     path: "/",
   });
 
@@ -106,12 +118,13 @@ export async function refreshAction() {
   }
 
   const data = await res.json();
+  const refreshMaxAge = data.refreshExpiresIn ?? STANDARD_REFRESH_MAX_AGE;
 
   cookieStore.set("access_token", data.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 15 * 60,
+    maxAge: ACCESS_TOKEN_MAX_AGE,
     path: "/",
   });
 
@@ -119,7 +132,7 @@ export async function refreshAction() {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 14 * 24 * 60 * 60,
+    maxAge: refreshMaxAge,
     path: "/",
   });
 

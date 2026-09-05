@@ -603,7 +603,7 @@ public sealed class ProfileEndpoints : IEndpointGroup
         }
 
         var verificationToken = Guid.NewGuid();
-        var otp = Random.Shared.Next(100000, 999999).ToString();
+        var otp = OtpHelpers.Generate();
 
         var cacheOptions = new DistributedCacheEntryOptions
         {
@@ -642,7 +642,7 @@ public sealed class ProfileEndpoints : IEndpointGroup
         }
 
         var parts = cacheValue.Split(':');
-        if (parts.Length != 3 || parts[0] != userId.ToString() || parts[2] != request.OtpCode)
+        if (parts.Length != 3 || parts[0] != userId.ToString() || !OtpHelpers.ConstantTimeEquals(parts[2], request.OtpCode))
         {
             return TypedResults.BadRequest("Invalid verification OTP code.");
         }

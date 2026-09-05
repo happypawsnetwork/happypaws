@@ -40,6 +40,9 @@ public static class AuthExtensions
             {
                 OnMessageReceived = context =>
                 {
+                    // Browser WebSocket clients cannot attach Authorization headers during connection handshake.
+                    // The token is passed in the access_token query parameter specifically for the SignalR hub.
+                    // Token exposure is mitigated by the 15-minute access token lifespan.
                     var accessToken = context.Request.Query["access_token"];
                     var path = context.HttpContext.Request.Path;
                     if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))

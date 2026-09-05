@@ -51,7 +51,8 @@ public sealed class StorageService : IStorageService
             BucketName = _options.PublicBucketName,
             Key = key,
             InputStream = content,
-            ContentType = contentType
+            ContentType = contentType,
+            DisablePayloadSigning = true
         };
 
         await _s3Client.PutObjectAsync(request, cancellationToken);
@@ -88,7 +89,8 @@ public sealed class StorageService : IStorageService
             BucketName = _options.PrivateBucketName,
             Key = key,
             InputStream = content,
-            ContentType = contentType
+            ContentType = contentType,
+            DisablePayloadSigning = true
         };
 
         await _s3Client.PutObjectAsync(request, cancellationToken);

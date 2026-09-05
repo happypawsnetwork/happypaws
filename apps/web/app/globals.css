@@ -3,3 +3,15 @@
 @theme {
   --font-outfit: var(--font-outfit), sans-serif;
 }
+
+/* Maintain light text and dark background during browser autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1e1e24 inset !important;
+  box-shadow: 0 0 0px 1000px #1e1e24 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #4ce5e5 !important;
+}

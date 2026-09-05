@@ -85,7 +85,7 @@ export default async function AdminLoginPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#1E1E24]/80 via-[#1E1E24]/85 to-[#1E1E24] z-10" />
 
       {/* Interactive Form Component */}
-      <div className="relative z-20 w-full max-w-md px-4 sm:px-6">
+      <div className="relative z-20 w-full max-w-[490px] px-4 sm:px-6">
         <LoginForm />
       </div>
     </div>

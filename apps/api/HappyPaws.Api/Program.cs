@@ -32,30 +32,44 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 2;
     });
+
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 10;
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
 });
 
 var configuredOrigins = builder.Configuration.GetValue<string>("Cors:AllowedOrigins");
-var allowedOrigins = !string.IsNullOrWhiteSpace(configuredOrigins)
-    ? configuredOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    : (builder.Environment.IsDevelopment() ? new[] { "http://localhost:3000" } : Array.Empty<string>());
+
+string[] allowedOrigins;
+if (!string.IsNullOrWhiteSpace(configuredOrigins))
+{
+    allowedOrigins = configuredOrigins.Split(
+        ',',
+        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+else if (builder.Environment.IsDevelopment())
+{
+    allowedOrigins = ["http://localhost:3000"];
+}
+else
+{
+    throw new InvalidOperationException(
+        "Cors:AllowedOrigins must be configured in non-development environments. " +
+        "Set it as a comma-separated list of allowed origins.");
+}
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        if (allowedOrigins.Length > 0)
-        {
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        }
-        else
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        }
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 

@@ -26,7 +26,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
     {
         var group = app.MapGroup("/api/auth/admin")
             .WithTags("Admin Authentication")
-            .RequireRateLimiting("GlobalPolicy");
+            .RequireRateLimiting("AuthPolicy");
 
         group.MapPost("/login", Login)
             .WithName("AdminLogin")
@@ -129,13 +129,14 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
             logger.LogInformation("[AdminAuthentication] Development Mode: Bypassing 2FA for {Email}. Issuing tokens.", user.Email);
 
             var (accessToken, refreshToken) = tokenService.GenerateTokens(user);
+            var refreshDays = request.RememberMe ? 30 : 1;
 
             var refreshTokenEntity = new RefreshToken
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 TokenHash = tokenService.HashToken(refreshToken),
-                ExpiresAt = DateTime.UtcNow.AddDays(14),
+                ExpiresAt = DateTime.UtcNow.AddDays(refreshDays),
                 CreatedAt = DateTime.UtcNow,
                 CreatedByIp = ip
             };
@@ -148,10 +149,11 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
                 300,
                 DevBypass: true,
                 AccessToken: accessToken,
-                RefreshToken: refreshToken));
+                RefreshToken: refreshToken,
+                RefreshExpiresIn: refreshDays * 86400));
         }
 
-        var otp = Random.Shared.Next(100000, 999999).ToString();
+        var otp = OtpHelpers.Generate();
         var verificationToken = Guid.NewGuid();
 
         var cacheOptions = new DistributedCacheEntryOptions
@@ -159,7 +161,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
             AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
         };
 
-        var cacheValue = $"{user.Id}:{otp}";
+        var cacheValue = $"{user.Id}:{otp}:{request.RememberMe}";
         await cache.SetStringAsync($"otp:{verificationToken}", cacheValue, cacheOptions, ct);
 
         var variables = new Dictionary<string, object>
@@ -206,12 +208,17 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
         }
 
         var parts = cacheValue.Split(':');
-        if (parts.Length != 2 || parts[1] != request.OtpCode)
+        if (parts.Length < 2 || !OtpHelpers.ConstantTimeEquals(parts[1], request.OtpCode))
         {
             logger.LogWarning("[AdminAuthentication] Invalid OTP code submitted for token {Token}", identifier);
             await rateLimitService.RecordFailureAsync(ip, identifier);
             return TypedResults.Unauthorized();
         }
+
+        var rememberMe = parts.Length > 2
+            && bool.TryParse(parts[2], out var cachedRemember)
+            && cachedRemember;
+        var refreshDays = rememberMe ? 30 : 1;
 
         if (!long.TryParse(parts[0], out var userId))
         {
@@ -245,7 +252,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
             Id = Guid.NewGuid(),
             UserId = user.Id,
             TokenHash = tokenService.HashToken(refreshToken),
-            ExpiresAt = DateTime.UtcNow.AddDays(14),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshDays),
             CreatedAt = DateTime.UtcNow,
             CreatedByIp = ip
         };
@@ -253,7 +260,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
         db.RefreshTokens.Add(refreshTokenEntity);
         await db.SaveChangesAsync(ct);
 
-        return TypedResults.Ok(new TokensResponse(accessToken, refreshToken, 900)); // 15 mins
+        return TypedResults.Ok(new TokensResponse(accessToken, refreshToken, 900, refreshDays * 86400)); // 15 mins
     }
 
     private static async Task<Results<Ok<TokensResponse>, UnauthorizedHttpResult, ProblemHttpResult>> Refresh(
@@ -304,19 +311,22 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
             return TypedResults.Unauthorized();
         }
 
-        // Token is valid. Rotate it.
+        // Token is valid. Rotate it preserving duration window.
         existingToken.RevokedAt = DateTime.UtcNow;
         existingToken.RevokedByIp = ip;
         existingToken.ReasonRevoked = "Rotated";
 
         var (newAccess, newRefresh) = tokenService.GenerateTokens(existingToken.User);
 
+        var originalDuration = existingToken.ExpiresAt - existingToken.CreatedAt;
+        var refreshDays = originalDuration.TotalDays > 7 ? 30 : 1;
+
         var newTokenEntity = new RefreshToken
         {
             Id = Guid.NewGuid(),
             UserId = existingToken.UserId,
             TokenHash = tokenService.HashToken(newRefresh),
-            ExpiresAt = DateTime.UtcNow.AddDays(14),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshDays),
             CreatedAt = DateTime.UtcNow,
             CreatedByIp = ip
         };
@@ -327,7 +337,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
         await db.SaveChangesAsync(ct);
 
         logger.LogInformation("[AdminAuthentication] Token successfully refreshed for user {UserId}", existingToken.UserId);
-        return TypedResults.Ok(new TokensResponse(newAccess, newRefresh, 900));
+        return TypedResults.Ok(new TokensResponse(newAccess, newRefresh, 900, refreshDays * 86400));
     }
 
     private static async Task<Results<Ok, UnauthorizedHttpResult>> Revoke(
@@ -390,7 +400,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
 /// <summary>
 /// Payload submitted by administrators to initiate the login process.
 /// </summary>
-public record AdminLoginRequest(string Email, string Password);
+public record AdminLoginRequest(string Email, string Password, bool RememberMe = false);
 
 /// <summary>
 /// Contains a tracking identifier to correlate the requested OTP for 2FA, or tokens directly if bypassed in development.
@@ -400,7 +410,8 @@ public record AdminLoginResponse(
     int ExpiresIn,
     bool DevBypass = false,
     string? AccessToken = null,
-    string? RefreshToken = null);
+    string? RefreshToken = null,
+    int? RefreshExpiresIn = null);
 
 /// <summary>
 /// Payload to verify a previously sent 2FA OTP using the tracking identifier.
@@ -410,7 +421,7 @@ public record AdminVerifyOtpRequest(Guid VerificationToken, string OtpCode);
 /// <summary>
 /// Contains the JWT access token and refresh token upon successful authentication.
 /// </summary>
-public record TokensResponse(string AccessToken, string RefreshToken, int ExpiresIn);
+public record TokensResponse(string AccessToken, string RefreshToken, int ExpiresIn, int RefreshExpiresIn = 86400);
 
 /// <summary>
 /// Payload to request a token refresh or revocation.

@@ -2,15 +2,13 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader, type AdminUser } from "@/components/admin/AdminHeader";
-import { refreshAction } from "@/actions/auth";
 import { MessagingProvider } from "@/providers/MessagingProvider";
 
 async function getAuthenticatedAdmin(): Promise<AdminUser> {
   const cookieStore = await cookies();
-  let accessToken = cookieStore.get("access_token")?.value;
-  const refreshToken = cookieStore.get("refresh_token")?.value;
+  const accessToken = cookieStore.get("access_token")?.value;
 
-  if (!accessToken && !refreshToken) {
+  if (!accessToken) {
     redirect("/admin/login");
   }
 
@@ -19,40 +17,13 @@ async function getAuthenticatedAdmin(): Promise<AdminUser> {
     process.env.NEXT_PUBLIC_API_URL ||
     "http://localhost:5197";
 
-  // If we only have refresh token, or if we want to try refreshing proactively
-  if (!accessToken && refreshToken) {
-    try {
-      const data = await refreshAction();
-      accessToken = data.accessToken;
-    } catch {
-      redirect("/admin/login");
-    }
-  }
-
   try {
-    let res = await fetch(`${apiUrl}/api/auth/admin/me`, {
+    const res = await fetch(`${apiUrl}/api/auth/admin/me`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       cache: "no-store",
     });
-
-    if (res.status === 401 && refreshToken) {
-      // Access token expired, attempt refresh
-      try {
-        const data = await refreshAction();
-        accessToken = data.accessToken;
-
-        res = await fetch(`${apiUrl}/api/auth/admin/me`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          cache: "no-store",
-        });
-      } catch {
-        redirect("/admin/login");
-      }
-    }
 
     if (!res.ok) {
       redirect("/admin/login");
