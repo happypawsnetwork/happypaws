@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   APIProvider,
   Map,
   AdvancedMarker,
   Pin,
+  useMap,
 } from "@vis.gl/react-google-maps";
+import { Locate, Loader2 } from "lucide-react";
 import { AdminRescueMapCase, updateRescueUrgency } from "@/actions/rescues";
 
 type RescueMapClientProps = {
@@ -14,11 +16,39 @@ type RescueMapClientProps = {
   apiKey: string;
 };
 
+type CameraTarget = {
+  lat: number;
+  lng: number;
+  zoom?: number;
+  key?: number;
+};
+
+// Smoothly moves the map camera when target coordinates change
+function MapController({ target }: { target: CameraTarget | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !target) return;
+    map.panTo({ lat: target.lat, lng: target.lng });
+    if (target.zoom !== undefined) {
+      map.setZoom(target.zoom);
+    }
+  }, [map, target]);
+
+  return null;
+}
+
 export function RescueMapClient({ cases, apiKey }: RescueMapClientProps) {
   const [selectedCase, setSelectedCase] = useState<AdminRescueMapCase | null>(
     null,
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [cameraTarget, setCameraTarget] = useState<CameraTarget | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Filter cases that actually have location data
   const mapCases = useMemo(
@@ -31,9 +61,47 @@ export function RescueMapClient({ cases, apiKey }: RescueMapClientProps) {
     () =>
       mapCases.length > 0
         ? { lat: mapCases[0].latitude!, lng: mapCases[0].longitude! }
-        : { lat: 39.8283, lng: -98.5795 },
+        : { lat: 7.8731, lng: 80.7718 },
     [mapCases],
   );
+
+  // Request browser geolocation to focus the map on the user's area
+  const requestUserLocation = useCallback((isManual = false) => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setCameraTarget({ ...coords, zoom: 12, key: Date.now() });
+        setIsLocating(false);
+      },
+      (error) => {
+        // Fall back gracefully to existing cases if permission is denied
+        console.warn(
+          "Geolocation request denied or unavailable:",
+          error.message,
+        );
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: isManual ? 0 : 60000,
+      },
+    );
+  }, []);
+
+  // Ask for location permission on visit
+  useEffect(() => {
+    requestUserLocation();
+  }, [requestUserLocation]);
 
   const getUrgencyColor = (level: string | null) => {
     switch (level?.toLowerCase()) {
@@ -68,6 +136,23 @@ export function RescueMapClient({ cases, apiKey }: RescueMapClientProps) {
 
   return (
     <div className="w-full h-full relative flex rounded-xl overflow-hidden border border-slate-200">
+      <div className="absolute top-4 left-4 z-10">
+        <button
+          type="button"
+          onClick={() => requestUserLocation(true)}
+          disabled={isLocating}
+          className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg shadow-md border border-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+          aria-label="Focus my location"
+        >
+          {isLocating ? (
+            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+          ) : (
+            <Locate className="h-4 w-4 text-blue-600" />
+          )}
+          <span>{isLocating ? "Locating..." : "My location"}</span>
+        </button>
+      </div>
+
       <APIProvider apiKey={apiKey}>
         <Map
           defaultZoom={mapCases.length > 0 ? 10 : 4}
@@ -77,6 +162,22 @@ export function RescueMapClient({ cases, apiKey }: RescueMapClientProps) {
           disableDefaultUI={true}
           zoomControl={true}
         >
+          <MapController target={cameraTarget} />
+
+          {/* Current user location indicator */}
+          {userLocation && (
+            <AdvancedMarker
+              position={userLocation}
+              title="Your location"
+              zIndex={1000}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="absolute h-7 w-7 rounded-full bg-blue-500/30 animate-ping" />
+                <span className="relative flex h-4 w-4 rounded-full border-2 border-white bg-blue-600 shadow-md ring-2 ring-blue-500/50" />
+              </div>
+            </AdvancedMarker>
+          )}
+
           {mapCases.map((c) => (
             <AdvancedMarker
               key={c.id}

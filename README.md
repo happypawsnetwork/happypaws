@@ -124,6 +124,17 @@ When running locally in development mode, the API automatically provisions five 
 | Veterinarian | `vet@happypawsnetwork.com` | `vet` | `123` | Verified |
 | Sponsor | `sponsor@happypawsnetwork.com` | `sponsor` | `123` | Verified |
 
+### Preview email templates
+
+When running the API in development mode, you can preview rendered Liquid email templates directly in your browser without triggering emails:
+
+- **Template index**: `http://localhost:5197/api/v1/dev/emails`
+- **Specific template**: `http://localhost:5197/api/v1/dev/emails/{templateName}` (for example, `/api/v1/dev/emails/otp-verification` or `/api/v1/dev/emails/admin-seeded`)
+
+Template files live in `apps/api/HappyPaws.Infrastructure/Emails/Templates/`. During development, edits to `.liquid` files reload instantly when refreshing the browser page.
+
+The email header logo is loaded from the public CDN at `${System__CdnBaseUrl}/brand/logo.png`. To display it, upload `logo.png` to the `brand/` path in the `happypaws-public` bucket (MinIO console at `http://localhost:9001` or Cloudflare R2 dashboard).
+
 ## Common workflows
 
 - **Linting**:

@@ -39,7 +39,54 @@ public class FluidEmailService : IEmailService
         _env = env;
         _parser = new FluidParser();
 
-        _templatesPath = Path.Combine(AppContext.BaseDirectory, "Emails", "Templates");
+        _templatesPath = ResolveTemplatesPath(env);
+    }
+
+    private static string ResolveTemplatesPath(IHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            // Point to the source templates folder during development for instant live editing
+            var sourcePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "HappyPaws.Infrastructure", "Emails", "Templates"));
+            if (Directory.Exists(sourcePath))
+            {
+                return sourcePath;
+            }
+        }
+
+        return Path.Combine(AppContext.BaseDirectory, "Emails", "Templates");
+    }
+
+    public async Task<string> RenderTemplateAsync(string templateName, object model, string subject = "Email preview", CancellationToken cancellationToken = default)
+    {
+        var layoutPath = Path.Combine(_templatesPath, "_layout.liquid");
+        var templatePath = Path.Combine(_templatesPath, $"{templateName}.liquid");
+
+        if (!File.Exists(templatePath))
+        {
+            throw new FileNotFoundException($"Template '{templateName}.liquid' was not found in {_templatesPath}.");
+        }
+
+        var layoutContent = await File.ReadAllTextAsync(layoutPath, cancellationToken);
+        var templateContent = await File.ReadAllTextAsync(templatePath, cancellationToken);
+
+        if (!_parser.TryParse(templateContent, out var parsedTemplate, out var error))
+        {
+            throw new InvalidOperationException($"Error parsing template {templateName}: {error}");
+        }
+
+        var context = new TemplateContext(model);
+        context.SetValue("CdnBaseUrl", _systemOptions.CdnBaseUrl);
+        var innerHtml = await parsedTemplate.RenderAsync(context);
+
+        if (!_parser.TryParse(layoutContent, out var parsedLayout, out error))
+        {
+            throw new InvalidOperationException($"Error parsing _layout.liquid: {error}");
+        }
+
+        var layoutContext = new TemplateContext(new { content = innerHtml, subject });
+        layoutContext.SetValue("CdnBaseUrl", _systemOptions.CdnBaseUrl);
+        return await parsedLayout.RenderAsync(layoutContext);
     }
 
     public async Task SendEmailAsync(string to, string subject, string templateName, object model, CancellationToken cancellationToken = default)
@@ -62,29 +109,7 @@ public class FluidEmailService : IEmailService
             return;
         }
 
-        var layoutPath = Path.Combine(_templatesPath, "_layout.liquid");
-        var templatePath = Path.Combine(_templatesPath, $"{templateName}.liquid");
-
-        var layoutContent = await File.ReadAllTextAsync(layoutPath, cancellationToken);
-        var templateContent = await File.ReadAllTextAsync(templatePath, cancellationToken);
-
-        if (!_parser.TryParse(templateContent, out var parsedTemplate, out var error))
-        {
-            throw new InvalidOperationException($"Error parsing template {templateName}: {error}");
-        }
-
-        var context = new TemplateContext(model);
-        context.SetValue("CdnBaseUrl", _systemOptions.CdnBaseUrl);
-        var innerHtml = await parsedTemplate.RenderAsync(context);
-
-        if (!_parser.TryParse(layoutContent, out var parsedLayout, out error))
-        {
-            throw new InvalidOperationException($"Error parsing _layout.liquid: {error}");
-        }
-
-        var layoutContext = new TemplateContext(new { content = innerHtml, subject });
-        layoutContext.SetValue("CdnBaseUrl", _systemOptions.CdnBaseUrl);
-        var finalHtml = await parsedLayout.RenderAsync(layoutContext);
+        var finalHtml = await RenderTemplateAsync(templateName, model, subject, cancellationToken);
 
         // Send via Resend HTTP API
         var requestBody = new

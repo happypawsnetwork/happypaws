@@ -3,7 +3,7 @@
 Happy Paws uses a dual-bucket object storage architecture to strictly separate public assets from sensitive documents. The storage interface abstracts the implementation, using MinIO for local development and Cloudflare R2 for production.
 
 ## Public Storage (`happypaws-public`)
-- ✅ **Usage**: Animal listing photos, user avatars, rescue update images, and general community media.
+- ✅ **Usage**: Animal listing photos, user avatars, rescue update images, brand assets (such as the email header logo at `brand/logo.png`), and general community media.
 - ✅ **Access**: CDN-cached and publicly readable via direct URLs. Provides fast access for heavy reads.
 
 ## Private Storage (`happypaws-private`)
