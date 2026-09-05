@@ -151,31 +151,32 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const data = await loginAction(email, password, rememberMe);
+      const result = await loginAction(email, password, rememberMe);
 
-      if (data.devBypass) {
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.devBypass) {
         router.push("/admin");
         return;
       }
 
-      setVerificationToken(data.verificationToken);
+      setVerificationToken(result.verificationToken);
 
       if (isResend) {
         setOtpValues(Array(6).fill(""));
         setResendCountdown(30 * resendAttempt);
         setResendAttempt((prev) => prev + 1);
-        setOtpExpiresIn(300);
+        setOtpExpiresIn(result.expiresIn);
         otpRefs.current[0]?.focus();
       } else {
         setStep("otp");
-        setOtpExpiresIn(300);
+        setOtpExpiresIn(result.expiresIn);
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
-      }
+    } catch {
+      setError("Unable to connect to the server. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -188,14 +189,17 @@ export default function LoginForm() {
     setError("");
 
     try {
-      await verifyOtpAction(verificationToken, codeToVerify);
-      router.push("/admin");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
+      const result = await verifyOtpAction(verificationToken, codeToVerify);
+
+      if (!result.success) {
+        setError(result.error);
+        setIsLoading(false);
+        return;
       }
+
+      router.push("/admin");
+    } catch {
+      setError("Unable to connect to the server. Please try again later.");
       setIsLoading(false);
     }
   };
