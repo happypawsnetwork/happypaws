@@ -26,7 +26,8 @@ happypaws/
 ├── apps/
 │   ├── api/        # ASP.NET Core 10 (Clean Architecture REST + SignalR)
 │   ├── web/        # Next.js 16 (Admin Dashboard and Public Web)
-│   └── mobile/     # Flutter 3.47 (iOS and Android Client)
+│   ├── mobile/     # Flutter 3.47 (iOS and Android Client)
+│   └── docs/       # Vite 8 + React 19 (Interactive Documentation and Playbook)
 ├── shared/         # Shared resources (OpenAPI specs and cross-app models)
 ├── docs/           # Architecture diagrams, user stories, and feature specs
 ├── docker-compose.yml # Local infrastructure (PostgreSQL, Valkey, MinIO)
@@ -38,6 +39,7 @@ For project-specific documentation and local setup details, refer to the individ
 - [API documentation](apps/api/README.md)
 - [Web documentation](apps/web/README.md)
 - [Mobile documentation](apps/mobile/README.md)
+- [Documentation site](apps/docs/README.md)
 
 ## Prerequisites
 
@@ -218,6 +220,15 @@ Refer to [`apps/api/HappyPaws.Api/.env.example`](apps/api/HappyPaws.Api/.env.exa
 - Point database and cache connection strings to internal container hostnames (`happypaws-db:5432` and `happypaws-redis:6379`) so traffic stays on the private Docker network.
 - Configure production Cloudflare R2 storage credentials for public and private buckets.
 - Set container port routing to `8080` to match ASP.NET Core runtime defaults.
+
+#### Documentation application (`docs.happypawsnetwork.com`)
+The interactive documentation site deploys to GitHub Pages via [.github/workflows/deploy-docs.yml](.github/workflows/deploy-docs.yml).
+
+DNS routing is managed through Cloudflare:
+- **Type**: `CNAME`
+- **Name**: `docs`
+- **Target**: `happypawsnetwork.github.io`
+- **Proxy status**: Set to **DNS only** during domain verification so GitHub can complete the TLS certificate challenge. Once GitHub issues the certificate and enforces HTTPS, proxying can be turned on if Cloudflare SSL/TLS encryption mode is set to **Full (strict)**.
 
 ## Architecture references
 
