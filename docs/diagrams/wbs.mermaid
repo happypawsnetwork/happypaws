@@ -1,0 +1,33 @@
+graph TD
+    A[Happy Paws Platform] --> E1[Epic 1: Foundation & Identity<br>July 15 - July 28]
+    A --> E2[Epic 2: Rescue & Triage Engine<br>July 29 - Aug 11]
+    A --> E3[Epic 3: Adoption & Foster Network<br>Aug 12 - Aug 25]
+    A --> E4[Epic 4: Specialized Operations<br>Aug 26 - Sept 8]
+
+    E1 --> S11[CI/CD Pipelines & Turborepo Setup]
+    E1 --> S12[Data Layer: PostgreSQL & MinIO]
+    E1 --> S13[API: JWT Auth & RBAC Roles]
+    E1 --> S14[Web: Identity Verification UI]
+
+    E2 --> S21[API: Rescue Submission & AI Scoring]
+    E2 --> S22[Web: Open Cases Dashboard]
+    E2 --> S23[Mobile: Rescue Reporting Interface]
+    E2 --> S24[E2E Tests & Production Release]
+
+    E3 --> S31[API: Adoption Application Workflow]
+    E3 --> S32[Mobile: Foster Case Management]
+    E3 --> S33[API/Mobile: SignalR Messaging]
+    E3 --> S34[Widget Tests & Production Release]
+
+    E4 --> S41[Mobile: Transporter Task Routing]
+    E4 --> S42[Mobile: Veterinarian Override UI]
+    E4 --> S43[Mobile: FCM Push Notifications]
+    E4 --> S44[Load Testing & Final Launch]
+
+    classDef epic fill:#2a9d8f,stroke:#264653,stroke-width:2px,color:#fff;
+    classDef story fill:#e9c46a,stroke:#e76f51,stroke-width:2px,color:#000;
+    classDef root fill:#e76f51,stroke:#264653,stroke-width:2px,color:#fff;
+
+    class A root;
+    class E1,E2,E3,E4 epic;
+    class S11,S12,S13,S14,S21,S22,S23,S24,S31,S32,S33,S34,S41,S42,S43,S44 story;

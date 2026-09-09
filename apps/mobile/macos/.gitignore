@@ -1,7 +1,11 @@
-# Flutter-related
-**/Flutter/ephemeral/
-**/Pods/
+# ==========================================
+# Flutter macOS Runner - Git Ignore
+# ==========================================
 
-# Xcode-related
-**/dgph
-**/xcuserdata/
+# CocoaPods
+Pods/
+.symlinks/
+
+# Flutter Generated Artifacts
+Flutter/ephemeral/
+Flutter/GeneratedPluginRegistrant.swift

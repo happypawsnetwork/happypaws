@@ -1,5 +1,5 @@
 # ==========================================
-# Happy Paws API (.NET) - Git Ignore
+# Happy Paws API (.NET 10) - Git Ignore
 # ==========================================
 
 # Build results
@@ -9,44 +9,31 @@
 [Rr]eleases/
 x64/
 x86/
-[Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
-bld/
 [Bb]in/
 [Oo]bj/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-ref/
-refint/
+*.binlog
 
-# Visual Studio & IDEs
-.vs/
-.vscode/
-*.user
-*.userosscache
-*.sln.docstates
-*.suo
-*.slnx.user
-*.DotSettings.user
+# Visual Studio and ReSharper specific
 _ReSharper*/
 *.[Rr]e[Ss]harper
-[Ii]gnore[Ii]gnore/
+*.pubxml.user
+*.Publish.xml
 
-# API Secrets & Local Configs
-.env
+# Local Configuration Overrides
 appsettings.*.local.json
+launchSettings.local.json
 secrets.json
 
-# Test Results & Coverage
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-*.coverage
-*.coveragexml
-*.trx
+# EF Core Migration Bundles
+efbundle
+efbundle.exe
 
-# NuGet Packages (if restored locally instead of global cache)
+# NuGet Packages
 *.nupkg
 *.snupkg
 packages/

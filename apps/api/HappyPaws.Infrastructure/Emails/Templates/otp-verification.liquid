@@ -1,8 +1,77 @@
+{% assign subj = subject | downcase %}
+{% if subj contains "password" %}
+  {% assign title = "Reset your password" %}
+  {% assign badge_label = "Password reset" %}
+  {% assign intro_text = "We received a request to reset your password. Use this one-time verification code to proceed." %}
+{% elsif subj contains "admin" %}
+  {% assign title = "Sign in to admin dashboard" %}
+  {% assign badge_label = "Admin sign in" %}
+  {% assign intro_text = "A sign-in attempt was made for the Happy Paws administration dashboard. Use this one-time code to complete your verification." %}
+{% elsif subj contains "new email" %}
+  {% assign title = "Confirm your new email" %}
+  {% assign badge_label = "Email change" %}
+  {% assign intro_text = "We received a request to update your account email. Use this one-time verification code to confirm this change." %}
+{% else %}
+  {% assign title = "Verify your email" %}
+  {% assign badge_label = "Email verification" %}
+  {% assign intro_text = "Welcome to Happy Paws. Use this one-time verification code to confirm your email address and get started." %}
+{% endif %}
 
-<h1>Web Admin Verification</h1>
-<p>Hello,</p>
-<p>A login attempt was made to the Happy Paws Web Admin panel. Please use the following 6-digit code to verify your identity:</p>
-<div class="card" style="text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; padding: 20px;">
-    {{ OtpCode }}
-</div>
-<p>This code will expire in 5 minutes. If you did not request this, please ignore this email.</p>
+<!-- Context Badge -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 16px auto;">
+  <tr>
+    <td align="center" style="background-color: #E6F7F6; border: 1px solid #B2E5E2; border-radius: 9999px; padding: 5px 14px;">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #00827F; display: block; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;">
+        {{ badge_label }}
+      </span>
+    </td>
+  </tr>
+</table>
+
+<!-- Main Headline -->
+<h1 style="color: #131B26; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; margin: 0 0 10px 0; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;">
+  {{ title }}
+</h1>
+
+<!-- Explanatory Copy -->
+<p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 auto 24px auto; max-width: 420px; text-align: center;">
+  {{ intro_text }}
+</p>
+
+<!-- Verification Code Card -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 20px auto; width: 100%; max-width: 360px;">
+  <tr>
+    <td align="center" style="background-color: #F4FAF9; border: 1px solid #D1EAE7; border-radius: 14px; padding: 22px 20px; text-align: center;">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5A6878; margin-bottom: 12px;">
+        Verification code
+      </div>
+
+      <!-- Selectable OTP digits -->
+      <div id="otp-code-value" class="otp-code" style="font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', Menlo, Monaco, Consolas, monospace; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #00827F; line-height: 1.1; text-align: center; padding-left: 8px; user-select: all; -webkit-user-select: all;">
+        {{ OtpCode }}
+      </div>
+
+      <!-- Copy code action button -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 16px auto 0 auto;">
+        <tr>
+          <td align="center">
+            <a id="copy-code-btn" href="#" role="button" style="display: inline-block; background-color: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; padding: 7px 18px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; color: #1E293B; text-decoration: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);">
+              <span style="display: inline-block; vertical-align: middle; margin-right: 6px; font-size: 14px; line-height: 1;">&#128203;</span>
+              <span class="btn-label" style="vertical-align: middle;">Copy code</span>
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Validity disclaimer -->
+      <div style="margin-top: 14px; font-size: 12px; color: #64748B; font-weight: 500;">
+        Valid for 5 minutes &bull; Single use
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- Security Note -->
+<p style="color: #64748B; font-size: 13px; line-height: 1.5; margin: 24px auto 0 auto; max-width: 420px; text-align: center;">
+  If you did not request this verification code, you can safely ignore this email. Your account remains protected.
+</p>

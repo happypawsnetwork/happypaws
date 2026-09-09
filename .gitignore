@@ -2,7 +2,7 @@
 # Happy Paws Monorepo - Global Git Ignore
 # ==========================================
 
-# OS Metadata
+# Operating System Metadata
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -26,42 +26,97 @@ $RECYCLE.BIN/
 *.msix
 *.msm
 *.msp
+*.lnk
 
-# Global IDEs & Editors
+# Global IDEs and Editors
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
 *.suo
 *.sln.docstates
 *.userprefs
+*.DotSettings.user
 
-# Monorepo Tooling & Caches
+# Visual Studio (Root or Project level)
+.vs/
+*.user
+*.userosscache
+*.slnx.user
+
+# VS Code (Allow team settings and extension recommendations)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Xcode and Android Studio
+xcuserdata/
+DerivedData/
+*.iml
+
+# Monorepo Tooling and Caches
 node_modules/
-.nx/cache/
+.pnpm-store/
+.turbo/
 .husky/_/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-lerna-debug.log*
-.turbo/
 
-# Global Environment Variables
+# Rogue Lockfiles (Enforce pnpm at root)
+apps/**/package-lock.json
+apps/**/yarn.lock
+apps/**/bun.lockb
+
+# Universal Environment Variables and Secrets
 .env
 .env.*
 !.env.example
 !.env.*.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
 
-# Local Test Data & Placeholders
-test-data/
+# Universal Build Outputs and TypeScript Caches
+dist/
+build/
+out/
+*.tsbuildinfo
 
-# Temporary Scratch, Logs, & Agent Artifacts
+# Universal Test Outputs and Coverage
+coverage/
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+*.lcov
+lcov.info
+coverage.cobertura.xml
+coverage.opencover.xml
+
+# Temporary Scratch, Dumps, and Agent Artifacts
 scratch/
 tmp/
 temp/
+*_temp/
+*.dmp
+*.mdmp
 
-# Local Docker Storage & Volume Mounts
+# Local Docker, Databases, and Volume Mounts
 *_data/
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+*.sqlite
+*.sqlite3
+dump.rdb
 
+# Local Test Data
+test-data/

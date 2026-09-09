@@ -15,8 +15,10 @@ The backend for Happy Paws, built with ASP.NET Core 10 using Clean Architecture.
    - **ConnectionStrings__Redis**: Update this to match the Docker setup (e.g., `localhost:6379,password=happypaws_dev,abortConnect=false`).
    - Map `System__Domain` and `System__CdnBaseUrl` to your environment.
 
-2. **Storage and branding assets**
-   The `happypaws-public` bucket (managed by MinIO locally or Cloudflare R2 in production) must contain the branding assets. Place `logo.png` at `/brand/logo.png` in the bucket. The email template engine uses `System__CdnBaseUrl` to build the full URL to this asset.
+2. **Storage, CDN, and branding assets**
+   The `happypaws-public` bucket (managed by MinIO locally or Cloudflare R2 in production) stores public assets such as animal pictures and branding materials.
+   - **Configure CDN base URL**: Set `System__CdnBaseUrl` in `.env` (default is `http://localhost:9000/happypaws-public` for local MinIO, or `https://cdn.happypawsnetwork.com` for production Cloudflare R2).
+   - **Upload email logo**: Place `logo.png` inside the `brand/` path of the `happypaws-public` bucket (key: `brand/logo.png`). The email layout template references `{{ CdnBaseUrl }}/brand/logo.png` to display the header logo.
 
 3. **Database migrations and API documentation**
    - **Database migrations**: The API automatically applies pending Entity Framework Core migrations and seeds initial data every time it starts. In development mode, it seeds five verified test accounts (`adopter@`, `foster@`, `transporter@`, `vet@`, and `sponsor@happypawsnetwork.com`) with password `123`.
@@ -36,3 +38,8 @@ The backend for Happy Paws, built with ASP.NET Core 10 using Clean Architecture.
    Once the API is running, verify its status and explore the endpoints:
    - **Scalar API reference**: When `ENABLE_API_DOCS=true`, navigate to the root URL in your browser. It automatically redirects to the interactive Scalar documentation at `/scalar/v1`.
    - **Health checks**: Access `/health` or `/healthz` to confirm the API is responsive.
+   - **Email templates preview (development only)**: When running locally in development mode, preview rendered Liquid email templates directly in your browser:
+     - Directory index: `http://localhost:5197/api/v1/dev/emails`
+     - OTP verification email: `http://localhost:5197/api/v1/dev/emails/otp-verification`
+     - Administrator seeded credentials email: `http://localhost:5197/api/v1/dev/emails/admin-seeded`
+     In development mode, templates are read directly from the source folder `HappyPaws.Infrastructure/Emails/Templates/`, so edits to `.liquid` files reload immediately upon browser refresh.

@@ -1,67 +1,45 @@
 # ==========================================
-# Happy Paws Mobile (Flutter) - Git Ignore
+# Happy Paws Mobile (Flutter 3.47) - Git Ignore
 # ==========================================
 
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# Environment Files
-.env
-.env.*
-!.env.example
-!.env.*.example
-
-# IDEs
-*.iml
-*.ipr
-*.iws
-.idea/
-.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
+# Flutter and Dart Tooling
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-build/
-coverage/
+.packages
+pubspec-overrides.yaml
+**/doc/api/
 
-# iOS Generated
-**/ios/Flutter/.last_build_id
-**/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/app.framework
-**/ios/Flutter/Flutter.framework
-**/ios/Flutter/Flutter.podspec
-**/ios/Flutter/ephemeral/
-
-# Android Studio will place build artifacts here
-android/app/debug/
-android/app/profile/
-android/app/release/
-android/.gradle/
-android/local.properties
-
-# Symbolication related
-app.*.symbols
-app.*.map.json
-
-# Widget Preview related
+# Widget Preview Tooling
 .widget_preview/
 
 # Android Signing Keys
 *.jks
 *.keystore
 upload-keystore.jks
+key.properties
+
+# Symbolication
+app.*.symbols
+app.*.map.json
+
+# Platform Runner Ephemeral and Generated Files
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/.last_build_id
+
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+
+**/linux/flutter/ephemeral/
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake

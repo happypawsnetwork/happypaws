@@ -75,7 +75,12 @@ public static class DependencyInjection
 
         // Register Infrastructure Preflight Checks
         services.AddScoped<IAdminPostQueryService, Services.AdminPostQueryService>();
-        services.AddHostedService<Preflight.PreflightCheckService>();
+
+        // Skip preflight connectivity checks during build-time OpenAPI generation when external services may be offline
+        if (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
+        {
+            services.AddHostedService<Preflight.PreflightCheckService>();
+        }
 
         return services;
     }
