@@ -1,6 +1,6 @@
-# Happy Paws - Feature Catalog
+# Happy Paws documentation and feature catalog
 
-Interactive feature catalog and user story matrix for the Happy Paws platform.
+Interactive documentation application and user story catalog for the Happy Paws platform.
 
 ## Overview
 
@@ -17,15 +17,33 @@ This application documents and demonstrates the end-to-end features, user storie
 
 ## Development
 
-Install dependencies and start the local development server:
+Install dependencies from the monorepo root and start the local development server:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev:docs
 ```
 
-Build the production bundle:
+Build the production bundle and generate client-side routing fallbacks:
 
 ```bash
-npm run build
+pnpm run build:docs
 ```
+
+Sync OpenAPI specifications from the shared contract:
+
+```bash
+pnpm --filter @happypaws/docs sync:spec
+```
+
+## Deployment
+
+The application deploys automatically to GitHub Pages via [.github/workflows/deploy-docs.yml](../../.github/workflows/deploy-docs.yml) when changes are pushed to `main`.
+
+### Custom domain setup
+
+The site is served at `docs.happypawsnetwork.com`.
+
+- The custom domain is declared in `public/CNAME`.
+- In Cloudflare DNS, configure a `CNAME` record with name `docs` pointing to `happypawsnetwork.github.io`.
+- Set proxy status to **DNS only** during initial certificate verification. Once GitHub finishes issuing the certificate and enforces HTTPS, proxying can be turned back on if Cloudflare SSL mode is set to **Full (strict)**.

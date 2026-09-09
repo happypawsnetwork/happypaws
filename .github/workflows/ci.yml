@@ -3,14 +3,77 @@ name: CI
 on:
   push:
     branches: ["main", "staging"]
+    paths-ignore:
+      - "**.md"
+      - ".agents/**"
+      - "apps/docs/**"
+      - "docs/**"
+      - "diagrams/**"
+      - ".gitignore"
   pull_request:
     branches: ["main", "staging"]
+    paths-ignore:
+      - "**.md"
+      - ".agents/**"
+      - "apps/docs/**"
+      - "docs/**"
+      - "diagrams/**"
+      - ".gitignore"
 
 jobs:
-  validate:
-    name: Build, Lint, and Test
+  changes:
+    name: Detect Changed Components
     runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'shared/**'
+            web:
+              - 'apps/web/**'
+              - 'shared/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+            mobile:
+              - 'apps/mobile/**'
+
+  validate-api:
+    name: Validate API (.NET 10)
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run API tests
+        run: dotnet test apps/api/HappyPaws.slnx --configuration Release
+
+      - name: Build API
+        run: dotnet build apps/api/HappyPaws.slnx --configuration Release
+
+  validate-web:
+    name: Validate Web (Next.js 16)
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,10 +89,27 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run lint
+        run: pnpm --filter web lint
+
+      - name: Build Web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy_ci_key
+        run: pnpm --filter web build
+
+  validate-mobile:
+    name: Validate Mobile (Flutter 3.47)
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -56,27 +136,9 @@ jobs:
         working-directory: apps/mobile
         run: flutter pub get
 
-      - name: Install Node dependencies
-        run: pnpm install
-
-      - name: Run lint
-        run: pnpm run lint:all
-
-      - name: Run API tests
-        run: dotnet test apps/api/HappyPaws.slnx --configuration Release
-
       - name: Run Mobile tests
         working-directory: apps/mobile
         run: flutter test
-
-      - name: Build API and Web
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:5000
-          NEXT_PUBLIC_APP_URL: http://localhost:3000
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy_ci_key
-        run: |
-          pnpm --filter api build
-          pnpm --filter web build
 
       - name: Build Mobile (Android Debug APK)
         working-directory: apps/mobile
