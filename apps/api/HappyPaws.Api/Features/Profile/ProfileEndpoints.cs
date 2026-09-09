@@ -616,7 +616,7 @@ public sealed class ProfileEndpoints : IEndpointGroup
             { "OtpCode", otp }
         };
         logger.LogInformation("[Profile] Sending email update OTP to {NewEmail}", request.NewEmail);
-        await emailService.SendEmailAsync(request.NewEmail, "Verify Your New Email", "otp-verification", variables, ct);
+        await emailService.SendEmailAsync(request.NewEmail, $"{otp} is your new email verification code", "otp-verification", variables, ct);
 
         return TypedResults.Ok(new VerificationTokenResponse(verificationToken));
     }

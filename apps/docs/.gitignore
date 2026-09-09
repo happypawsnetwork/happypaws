@@ -1,0 +1,7 @@
+# ==========================================
+# Happy Paws Docs (Vite/React) - Git Ignore
+# ==========================================
+
+# Vite caches and SSR outputs
+dist-ssr/
+.vite/

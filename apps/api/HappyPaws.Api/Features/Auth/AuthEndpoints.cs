@@ -214,7 +214,7 @@ public sealed class AuthEndpoints : IEndpointGroup
         };
 
         logger.LogInformation("[Authentication] Sending registration OTP to {Email} with token {Token}", request.Email, verificationToken);
-        await emailService.SendEmailAsync(request.Email, "Verify Your Email", "otp-verification", variables, ct);
+        await emailService.SendEmailAsync(request.Email, $"{otp} is your verification code", "otp-verification", variables, ct);
 
         return TypedResults.Ok(new VerificationTokenResponse(verificationToken));
     }
@@ -364,7 +364,7 @@ public sealed class AuthEndpoints : IEndpointGroup
             };
 
             logger.LogInformation("[Authentication] Password reset requested for {Email}. OTP generated with token {Token}", request.Email, verificationToken);
-            await emailService.SendEmailAsync(user.Email, "Reset Your Password", "otp-verification", variables, ct);
+            await emailService.SendEmailAsync(user.Email, $"{otp} is your password reset code", "otp-verification", variables, ct);
         }
         else
         {

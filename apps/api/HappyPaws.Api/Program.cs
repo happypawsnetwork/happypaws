@@ -85,7 +85,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
-await app.ApplyMigrationsAndSeedAsync();
+// Avoid database migrations and admin account seeding during design-time tooling or build-time OpenAPI document generation
+var isDocumentGeneration = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider"
+    || Microsoft.EntityFrameworkCore.EF.IsDesignTime;
+
+if (!isDocumentGeneration)
+{
+    await app.ApplyMigrationsAndSeedAsync();
+}
 
 var enableApiDocs = builder.Configuration.GetValue<bool>("ENABLE_API_DOCS");
 if (enableApiDocs)

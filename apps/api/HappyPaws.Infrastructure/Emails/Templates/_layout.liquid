@@ -1,37 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>{{ subject }}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EmailMessage",
+    "description": "{{ subject }}"
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      supported-color-schemes: light;
+    }
+    body, table, td, a {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    img {
+      -ms-interpolation-mode: bicubic;
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      background-color: #F4F6F8;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-card {
+        width: 100% !important;
+        border-radius: 12px !important;
+      }
+      .content-cell {
+        padding: 12px 20px 32px 20px !important;
+      }
+      .header-cell {
+        padding: 28px 20px 16px 20px !important;
+      }
+      .footer-cell {
+        padding: 20px 20px 24px 20px !important;
+      }
+      .otp-code {
+        font-size: 28px !important;
+        letter-spacing: 6px !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #1E1E24; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1E1E24; padding: 32px 16px;">
+<body style="margin: 0; padding: 0; background-color: #F4F6F8; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+  <!-- Outer Canvas Table -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F4F6F8; min-height: 100vh; padding: 40px 16px 48px 16px; margin: 0 auto;">
     <tr>
-      <td align="center">
-        <table role="presentation" width="100%" style="max-width: 560px; background-color: #2B2B36; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <!-- Header with Hosted Logo -->
+      <td align="center" valign="top">
+        <!-- Main Card Container -->
+        <table role="presentation" class="email-card" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 540px; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid #E5E9EB; box-shadow: 0 4px 20px rgba(19, 27, 38, 0.05); margin: 0 auto;">
+          
+          <!-- Header with Brand Mark -->
           <tr>
-            <td style="padding: 28px 32px 16px 32px; text-align: center;">
-              <img src="{{ CdnBaseUrl }}/brand/logo.png" alt="Happy Paws" width="160" style="border: 0; display: block; margin: 0 auto;">
+            <td align="center" class="header-cell" style="padding: 36px 32px 18px 32px; text-align: center;">
+              {% if CdnBaseUrl and CdnBaseUrl != "" %}
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
+                <tr>
+                  <td align="center">
+                    <img src="{{ CdnBaseUrl }}/brand/logo.png" alt="Happy Paws" width="140" style="border: 0; display: block; margin: 0 auto; max-width: 140px; height: auto;">
+                  </td>
+                </tr>
+              </table>
+              {% else %}
+              <!-- Stylized Brand Badge -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 10px auto;">
+                      <tr>
+                        <td align="center" valign="middle" style="width: 44px; height: 44px; background-color: #E6F7F6; border: 1px solid #B2E5E2; border-radius: 12px; font-size: 20px; line-height: 44px; text-align: center; color: #00827F;">
+                          &#128062;
+                        </td>
+                      </tr>
+                    </table>
+                    <div style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: #131B26; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;">
+                      Happy Paws
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
             </td>
           </tr>
-          <!-- Main Content -->
+
+          <!-- Main Content Slot -->
           <tr>
-            <td style="padding: 16px 32px 32px 32px; color: #A0A0AB; font-size: 15px; line-height: 1.6;">
+            <td align="center" class="content-cell" style="padding: 12px 36px 36px 36px; color: #334155; font-size: 15px; line-height: 1.6; text-align: center;">
               {{ content }}
             </td>
           </tr>
-          <!-- Footer -->
+
+          <!-- Clean Footer -->
           <tr>
-            <td style="padding: 24px 32px; background-color: #1E1E24; text-align: center; color: #A0A0AB; font-size: 12px; line-height: 1.5; border-top: 1px solid #3A3A4A;">
-              <p style="margin: 0 0 8px 0;">Happy Paws Animal Rescue & Rehoming</p>
-              <p style="margin: 0;">This is an automated message. Please do not reply.</p>
+            <td align="center" class="footer-cell" style="padding: 24px 32px 28px 32px; background-color: #F8FAFC; text-align: center; color: #64748B; font-size: 12px; line-height: 1.6; border-top: 1px solid #E5E9EB;">
+              <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600; color: #334155; letter-spacing: -0.01em;">
+                Happy Paws Network
+              </p>
+              <p style="margin: 0 0 10px 0; font-size: 12px; color: #64748B;">
+                Animal rescue, pet adoption, and community care in Sri Lanka.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94A3B8;">
+                This is an automated message. Please do not reply directly to this email.
+              </p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
   </table>
+
+  <!-- Browser preview clipboard interaction -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var copyBtn = document.getElementById("copy-code-btn");
+      var otpElem = document.getElementById("otp-code-value");
+      if (copyBtn && otpElem) {
+        copyBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          var text = otpElem.innerText.replace(/\s+/g, "").trim();
+          navigator.clipboard.writeText(text).then(function () {
+            var label = copyBtn.querySelector(".btn-label");
+            if (label) {
+              var oldText = label.textContent;
+              label.textContent = "Copied to clipboard";
+              copyBtn.style.backgroundColor = "#E6F7F6";
+              copyBtn.style.borderColor = "#00827F";
+              copyBtn.style.color = "#00827F";
+              setTimeout(function () {
+                label.textContent = oldText;
+                copyBtn.style.backgroundColor = "#F1F5F9";
+                copyBtn.style.borderColor = "#CBD5E1";
+                copyBtn.style.color = "#1E293B";
+              }, 2500);
+            }
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

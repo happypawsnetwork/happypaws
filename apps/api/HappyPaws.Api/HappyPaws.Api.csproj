@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../../../shared/api-specs</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +18,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.11">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.17.1" />
   </ItemGroup>
 
@@ -21,5 +29,16 @@
     <ProjectReference Include="..\HappyPaws.Application\HappyPaws.Application.csproj" />
     <ProjectReference Include="..\HappyPaws.Infrastructure\HappyPaws.Infrastructure.csproj" />
   </ItemGroup>
+
+  <Target Name="SyncSwaggerJson" AfterTargets="GenerateOpenApiDocuments">
+    <Copy
+      SourceFiles="$(OpenApiDocumentsDirectory)/openapi.json"
+      DestinationFiles="$(OpenApiDocumentsDirectory)/swagger.json"
+      Condition="Exists('$(OpenApiDocumentsDirectory)/openapi.json')" />
+    <Copy
+      SourceFiles="$(OpenApiDocumentsDirectory)/openapi.json"
+      DestinationFiles="$(MSBuildProjectDirectory)/../../docs/src/data/openapi.json"
+      Condition="Exists('$(OpenApiDocumentsDirectory)/openapi.json') And Exists('$(MSBuildProjectDirectory)/../../docs/src/data')" />
+  </Target>
 
 </Project>

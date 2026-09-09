@@ -17,20 +17,50 @@ namespace HappyPaws.Api.Features.Dev;
 
 public sealed class DevEmailEndpoints : IEndpointGroup
 {
-    private static readonly Dictionary<string, (string Subject, object Model)> SampleTemplates = new(StringComparer.OrdinalIgnoreCase)
+    private sealed record SamplePreview(string TemplateFile, string Subject, object Model, string Description);
+
+    private static readonly Dictionary<string, SamplePreview> SampleTemplates = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["otp-verification"] = (
-            "Web Admin Verification",
-            new { OtpCode = "849201" }
+        ["otp-register"] = new(
+            "otp-verification",
+            "849201 is your verification code",
+            new { OtpCode = "849201" },
+            "User registration email verification"
         ),
-        ["admin-seeded"] = (
-            "Administrator Account Provisioned",
+        ["otp-password-reset"] = new(
+            "otp-verification",
+            "519342 is your password reset code",
+            new { OtpCode = "519342" },
+            "Password reset one-time verification code"
+        ),
+        ["otp-email-change"] = new(
+            "otp-verification",
+            "372819 is your new email verification code",
+            new { OtpCode = "372819" },
+            "Email update confirmation code"
+        ),
+        ["otp-admin-login"] = new(
+            "otp-verification",
+            "640192 is your admin verification code",
+            new { OtpCode = "640192" },
+            "Administrative 2FA sign-in verification"
+        ),
+        ["otp-verification"] = new(
+            "otp-verification",
+            "849201 is your verification code",
+            new { OtpCode = "849201" },
+            "Default verification template preview"
+        ),
+        ["admin-seeded"] = new(
+            "admin-seeded",
+            "Happy Paws - Administrator account provisioned",
             new
             {
                 Email = "admin@happypaws.lk",
                 Password = "SuperSecurePassword123!",
                 WebDashboardUrl = "http://localhost:3000/admin"
-            }
+            },
+            "Initial setup administrator credentials"
         )
     };
 
@@ -62,8 +92,17 @@ public sealed class DevEmailEndpoints : IEndpointGroup
 
     private static ContentHttpResult ListTemplates()
     {
-        var items = string.Join("", SampleTemplates.Keys.Select(name =>
-            $"<li style=\"margin: 12px 0;\"><a href=\"/api/v1/dev/emails/{name}\" style=\"color: #4CE5E5; font-size: 16px; text-decoration: none;\"><strong>{name}</strong></a> - <span style=\"color: #A0A0AB;\">{SampleTemplates[name].Subject}</span></li>"));
+        var items = string.Join("", SampleTemplates.Select(kv =>
+            $$"""
+            <a href="/api/v1/dev/emails/{{kv.Key}}" style="display: block; text-decoration: none; padding: 16px 20px; margin-bottom: 12px; background-color: #FFFFFF; border: 1px solid #E5E9EB; border-radius: 12px; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="color: #00827F; font-size: 15px; font-weight: 600;">{{kv.Key}}</span>
+                    <span style="color: #64748B; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;">{{kv.Value.TemplateFile}}</span>
+                </div>
+                <div style="color: #131B26; font-size: 14px; font-weight: 500; margin-bottom: 4px;">{{kv.Value.Subject}}</div>
+                <div style="color: #64748B; font-size: 13px;">{{kv.Value.Description}}</div>
+            </a>
+            """));
 
         var html = $$"""
         <!DOCTYPE html>
@@ -74,33 +113,50 @@ public sealed class DevEmailEndpoints : IEndpointGroup
             <title>Email templates preview</title>
             <style>
                 body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background-color: #1E1E24;
-                    color: #FFFFFF;
-                    padding: 40px 20px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+                    background-color: #F4F6F8;
+                    color: #131B26;
+                    padding: 48px 20px;
                     display: flex;
                     justify-content: center;
+                    margin: 0;
                 }
                 .container {
                     max-width: 600px;
                     width: 100%;
-                    background-color: #2B2B36;
-                    border-radius: 12px;
-                    padding: 32px;
-                    border: 1px solid #3A3A4A;
+                    background-color: #FFFFFF;
+                    border-radius: 16px;
+                    padding: 36px 32px;
+                    border: 1px solid #E5E9EB;
+                    box-shadow: 0 4px 20px rgba(19, 27, 38, 0.05);
+                    text-align: center;
                 }
-                h1 { margin-top: 0; font-size: 22px; color: #FFFFFF; }
-                p { color: #A0A0AB; font-size: 14px; line-height: 1.6; }
-                ul { list-style-type: none; padding-left: 0; margin-top: 24px; }
+                .badge {
+                    display: inline-block;
+                    background-color: #E6F7F6;
+                    border: 1px solid #B2E5E2;
+                    border-radius: 9999px;
+                    padding: 5px 14px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #00827F;
+                    margin-bottom: 14px;
+                }
+                h1 { margin: 0 0 10px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #131B26; }
+                p { color: #5A6878; font-size: 14px; line-height: 1.6; margin: 0 0 28px 0; }
+                .list { text-align: left; }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>Email templates preview</h1>
-                <p>Select an email template below to preview its rendered HTML with sample data:</p>
-                <ul>
+                <div class="badge">Development preview</div>
+                <h1>Email templates</h1>
+                <p>Select an email template below to inspect its rendered layout with sample parameters:</p>
+                <div class="list">
                     {{items}}
-                </ul>
+                </div>
             </div>
         </body>
         </html>
@@ -117,12 +173,13 @@ public sealed class DevEmailEndpoints : IEndpointGroup
         var cleanName = Path.GetFileNameWithoutExtension(templateName);
 
         SampleTemplates.TryGetValue(cleanName, out var sample);
-        var subject = sample.Subject ?? "Email preview";
-        var model = sample.Model ?? new { };
+        var templateFile = sample?.TemplateFile ?? cleanName;
+        var subject = sample?.Subject ?? "Email preview";
+        var model = sample?.Model ?? new { };
 
         try
         {
-            var html = await emailService.RenderTemplateAsync(cleanName, model, subject, cancellationToken);
+            var html = await emailService.RenderTemplateAsync(templateFile, model, subject, cancellationToken);
             return TypedResults.Content(html, "text/html");
         }
         catch (FileNotFoundException)

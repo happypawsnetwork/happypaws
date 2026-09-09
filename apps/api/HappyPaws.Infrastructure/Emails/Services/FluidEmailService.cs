@@ -77,6 +77,8 @@ public class FluidEmailService : IEmailService
 
         var context = new TemplateContext(model);
         context.SetValue("CdnBaseUrl", _systemOptions.CdnBaseUrl);
+        context.SetValue("Subject", subject);
+        context.SetValue("subject", subject);
         var innerHtml = await parsedTemplate.RenderAsync(context);
 
         if (!_parser.TryParse(layoutContent, out var parsedLayout, out error))

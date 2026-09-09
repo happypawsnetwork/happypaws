@@ -172,7 +172,7 @@ public sealed class AdminAuthEndpoints : IEndpointGroup
         logger.LogInformation("[AdminAuthentication] Valid credentials for {Email}. 2FA OTP generated and dispatched", request.Email);
 
         // Ensure email sends in background or awaited. We await it here for simplicity.
-        await emailService.SendEmailAsync(user.Email, "Web Admin Verification", "otp-verification", variables, ct);
+        await emailService.SendEmailAsync(user.Email, $"{otp} is your admin verification code", "otp-verification", variables, ct);
 
         return TypedResults.Ok(new AdminLoginResponse(verificationToken, 300));
     }
