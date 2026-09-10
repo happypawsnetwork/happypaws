@@ -154,11 +154,6 @@ The email header logo is loaded from the public CDN at `${System__CdnBaseUrl}/br
   ```bash
   pnpm run build
   ```
-- **Sync staging to main**:
-  Sync the staging branch to main while stripping out all agent directives, skills, and configuration:
-  ```powershell
-  ./sync-to-main.ps1
-  ```
 - **Git hooks**:
   Husky runs automatically after `pnpm install` so `lint-staged` formats and analyzes changed files before every commit.
 
