@@ -34,6 +34,7 @@ public static class GetCommunityFeed
 
         var query = db.Posts.AsNoTracking()
             .Include(p => p.Author)
+                .ThenInclude(u => u.Roles)
             .Include(p => p.Media)
             .Where(p => !p.IsDeleted);
 
@@ -139,7 +140,8 @@ public static class GetCommunityFeed
                 p.UrgencyLevel?.ToString(),
                 p.AiTriageReason,
                 p.IsUrgencyManuallyOverridden,
-                isRecommended
+                isRecommended,
+                p.Author.Roles.Any(r => r.IsVerified)
             );
         }).ToList();
     }

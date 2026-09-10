@@ -36,6 +36,7 @@ public static class GetMapBoundsFeed
 
         var query = db.Posts.AsNoTracking()
             .Include(p => p.Author)
+                .ThenInclude(u => u.Roles)
             .Include(p => p.Media)
             .Where(p => !p.IsDeleted && p.LocationPoint != null)
             .Where(p => bounds.Contains(p.LocationPoint))
@@ -82,7 +83,8 @@ public static class GetMapBoundsFeed
             p.UrgencyLevel?.ToString(),
             p.AiTriageReason,
             p.IsUrgencyManuallyOverridden,
-            false
+            false,
+            p.Author.Roles.Any(r => r.IsVerified)
         )).ToList();
     }
 }

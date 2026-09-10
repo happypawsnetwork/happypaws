@@ -6,6 +6,7 @@ class ChatThreadParticipant {
   final String lastName;
   final String? avatarUrl;
   final bool isSelf;
+  final bool isVerified;
 
   ChatThreadParticipant({
     required this.userId,
@@ -13,6 +14,7 @@ class ChatThreadParticipant {
     required this.lastName,
     this.avatarUrl,
     this.isSelf = false,
+    this.isVerified = false,
   });
 
   factory ChatThreadParticipant.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class ChatThreadParticipant {
       lastName: json['lastName'] ?? '',
       avatarUrl: json['avatarUrl'],
       isSelf: json['isSelf'] ?? false,
+      isVerified: json['isVerified'] as bool? ?? false,
     );
   }
 }

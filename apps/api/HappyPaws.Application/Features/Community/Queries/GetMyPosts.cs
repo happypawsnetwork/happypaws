@@ -18,6 +18,7 @@ public static class GetMyPosts
     {
         var posts = await db.Posts.AsNoTracking()
             .Include(p => p.Author)
+                .ThenInclude(u => u.Roles)
             .Include(p => p.Media)
             .Where(p => p.AuthorId == currentUserId && !p.IsDeleted)
             .OrderByDescending(p => p.CreatedAt).ThenByDescending(p => p.Id)
@@ -53,7 +54,7 @@ public static class GetMyPosts
             p.UrgencyLevel?.ToString(),
             p.AiTriageReason,
             p.IsUrgencyManuallyOverridden,
-            false
+            p.Author.Roles.Any(r => r.IsVerified)
         )).ToList();
     }
 }

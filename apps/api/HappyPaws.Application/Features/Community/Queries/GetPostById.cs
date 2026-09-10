@@ -19,6 +19,7 @@ public static class GetPostById
     {
         var p = await db.Posts.AsNoTracking()
             .Include(x => x.Author)
+                .ThenInclude(u => u.Roles)
             .Include(x => x.Media)
             .Include(x => x.ParentPost)
             .Include(x => x.VetDetails)
@@ -66,7 +67,8 @@ public static class GetPostById
                 p.Expectations.GoodWithChildren,
                 p.Expectations.ActivityTempo?.ToString(),
                 p.Expectations.GoodWithPets ?? new List<string>()
-            ) : null
+            ) : null,
+            p.Author.Roles.Any(r => r.IsVerified)
         );
     }
 }

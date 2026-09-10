@@ -20,6 +20,43 @@ public sealed class PostEndpoints : IEndpointGroup
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/community/posts").RequireAuthorization();
+        var communityGroup = app.MapGroup("/api/v1/community").RequireAuthorization();
+
+        async Task<Ok<System.Collections.Generic.IReadOnlyList<PostSummaryResponse>>> SearchHandler(
+            IApplicationDbContext db,
+            ClaimsPrincipal user,
+            [FromQuery(Name = "q")] string? query,
+            [FromQuery] string? species,
+            [FromQuery] string? location,
+            [FromQuery] string? urgency,
+            [FromQuery] string? type,
+            [FromQuery] string? status,
+            [FromQuery] double? lat,
+            [FromQuery] double? lon,
+            [FromQuery] double? radiusKm,
+            [FromQuery] string sort = "newest",
+            [FromQuery] Guid? cursorId = null,
+            [FromQuery] DateTimeOffset? cursorDate = null,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var userId = long.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await SearchPosts.HandleAsync(
+                db, query, species, location, urgency, type, status,
+                lat, lon, radiusKm, sort, cursorId, cursorDate, userId, pageSize, ct);
+            return TypedResults.Ok(result);
+        }
+
+        group.MapGet("/search", SearchHandler)
+            .WithName("SearchPosts")
+            .WithSummary("Search posts and animals")
+            .WithDescription("Searches and filters listed animals and posts by query, species, location, urgency, and type, independent of matching engine suggestions.");
+
+        communityGroup.MapGet("/search", SearchHandler)
+            .WithName("CommunitySearch")
+            .WithSummary("Search posts and animals")
+            .WithDescription("Searches and filters listed animals and posts by query, species, location, urgency, and type, independent of matching engine suggestions.");
+
 
         group.MapGet("/", async Task<Ok<System.Collections.Generic.IReadOnlyList<PostSummaryResponse>>> (
             IApplicationDbContext db,

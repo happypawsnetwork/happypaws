@@ -9,7 +9,7 @@ import {
   Copy,
   Check,
   ExternalLink,
-  UserCheck,
+  User,
   HeartHandshake,
   Truck,
   Stethoscope,
@@ -37,8 +37,9 @@ export function ProjectOverviewPage() {
       email: "adopter@happypawsnetwork.com",
       username: "adopter",
       password: "123",
-      icon: UserCheck,
+      icon: User,
       color: "teal",
+      isVerified: false,
       description: "Applies for pet adoptions, submits rescue reports, and manages adopter profile.",
     },
     {
@@ -48,6 +49,7 @@ export function ProjectOverviewPage() {
       password: "123",
       icon: HeartHandshake,
       color: "indigo",
+      isVerified: true,
       description: "Manages temporary foster placements, medical updates, and animal handovers.",
     },
     {
@@ -57,6 +59,7 @@ export function ProjectOverviewPage() {
       password: "123",
       icon: Truck,
       color: "emerald",
+      isVerified: true,
       description: "Coordinates animal transit trips, verifies routes, and logs rescue pickups.",
     },
     {
@@ -66,6 +69,7 @@ export function ProjectOverviewPage() {
       password: "123",
       icon: Stethoscope,
       color: "rose",
+      isVerified: true,
       description: "Reviews clinical KYC records, verifies AI urgency scores, and submits medical guidance.",
     },
     {
@@ -75,6 +79,7 @@ export function ProjectOverviewPage() {
       password: "123",
       icon: Coins,
       color: "amber",
+      isVerified: true,
       description: "Pledges financial donations and supplies for active rescue operations.",
     },
   ];
@@ -352,7 +357,7 @@ export function ProjectOverviewPage() {
               <div className="space-y-1">
                 <h3 className="text-sm font-bold text-slate-900">Step 2: Reset the database and apply migrations</h3>
                 <p className="text-xs text-slate-600">
-                  Recreates containers, executes Entity Framework Core migrations, and automatically provisions five verified test accounts.
+                  Recreates containers, executes Entity Framework Core migrations, and automatically provisions five test accounts.
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-slate-900 text-slate-100 font-mono text-xs flex items-center justify-between">
@@ -629,7 +634,7 @@ export function ProjectOverviewPage() {
         <div>
           <h2 className="text-xl font-bold text-slate-900">Seeded test accounts</h2>
           <p className="text-sm text-slate-500">
-            During local development, five pre-verified test accounts are provisioned with password <code className="font-mono text-teal-800 font-semibold">123</code>.
+            During local development, five test accounts are provisioned with password <code className="font-mono text-teal-800 font-semibold">123</code>.
           </p>
         </div>
 
@@ -649,8 +654,14 @@ export function ProjectOverviewPage() {
                       </div>
                       <span className="text-sm font-bold text-slate-900">{acc.role}</span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
-                      Verified
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border ${
+                        acc.isVerified
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                          : "bg-amber-50 text-amber-700 border-amber-200/60"
+                      }`}
+                    >
+                      {acc.isVerified ? "Verified" : "Unverified"}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-2">{acc.description}</p>

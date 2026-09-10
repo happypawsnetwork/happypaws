@@ -304,7 +304,7 @@ export function FeatureGuide({ steps, storyTitle }: FeatureGuideProps) {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start flex-1">
                 {/* Left Column: Plain Screenshot with zero clipping */}
                 <div className="md:col-span-5 flex flex-col items-center">
-                  <div className="relative w-full max-w-[270px]">
+                  <div className="relative w-full max-w-[320px]">
                     <div
                       role="button"
                       tabIndex={0}
@@ -494,7 +494,7 @@ export function FeatureGuide({ steps, storyTitle }: FeatureGuideProps) {
               exit={{ scale: 0.94, opacity: 0, y: 8 }}
               transition={{ type: "spring", bounce: 0, duration: 0.35 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-2xl w-full bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 sm:p-6 text-slate-900 space-y-4 max-h-[92vh] flex flex-col"
+              className="relative max-w-4xl w-full bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 sm:p-6 text-slate-900 space-y-4 max-h-[92vh] flex flex-col"
             >
               {/* Modal Top Bar */}
               <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 shrink-0">

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../../core/network/api_client.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/verified_badge.dart';
 
 class TransportOffersScreen extends StatefulWidget {
   final String taskId;
@@ -85,6 +86,8 @@ class _TransportOffersScreenState extends State<TransportOffersScreen> {
                 final offerId = offer['id']?.toString() ?? '';
                 final transporterName =
                     offer['transporterName'] ?? 'Unknown Transporter';
+                final isTransporterVerified =
+                    offer['isTransporterVerified'] as bool? ?? false;
                 final pickupWindow = offer['pickupWindow'] ?? 'Anytime';
                 final message = offer['message'] ?? '';
                 final status = offer['status'] as String?;
@@ -96,12 +99,22 @@ class _TransportOffersScreenState extends State<TransportOffersScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          transporterName,
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                transporterName,
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            if (isTransporterVerified) ...[
+                              const SizedBox(width: 4),
+                              const VerifiedBadge(size: 14),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Row(

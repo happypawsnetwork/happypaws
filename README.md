@@ -120,7 +120,7 @@ When running locally in development mode, the API automatically provisions five 
 
 | Role | Email | Username | Password | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| Adopter | `adopter@happypawsnetwork.com` | `adopter` | `123` | Verified |
+| Adopter | `adopter@happypawsnetwork.com` | `adopter` | `123` | Unverified |
 | Foster | `foster@happypawsnetwork.com` | `foster` | `123` | Verified |
 | Transporter | `transporter@happypawsnetwork.com` | `transporter` | `123` | Verified |
 | Veterinarian | `vet@happypawsnetwork.com` | `vet` | `123` | Verified |

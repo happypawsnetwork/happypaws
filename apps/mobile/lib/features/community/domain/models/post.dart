@@ -59,6 +59,7 @@ class Post {
   final String? aiTriageReason;
   final bool isUrgencyManuallyOverridden;
   final bool isRecommended;
+  final bool isAuthorVerified;
 
   const Post({
     required this.id,
@@ -92,6 +93,7 @@ class Post {
     this.aiTriageReason,
     this.isUrgencyManuallyOverridden = false,
     this.isRecommended = false,
+    this.isAuthorVerified = false,
   });
 
   Post copyWith({
@@ -126,6 +128,7 @@ class Post {
     String? aiTriageReason,
     bool? isUrgencyManuallyOverridden,
     bool? isRecommended,
+    bool? isAuthorVerified,
   }) {
     return Post(
       id: id ?? this.id,
@@ -160,6 +163,7 @@ class Post {
       isUrgencyManuallyOverridden:
           isUrgencyManuallyOverridden ?? this.isUrgencyManuallyOverridden,
       isRecommended: isRecommended ?? this.isRecommended,
+      isAuthorVerified: isAuthorVerified ?? this.isAuthorVerified,
     );
   }
 }

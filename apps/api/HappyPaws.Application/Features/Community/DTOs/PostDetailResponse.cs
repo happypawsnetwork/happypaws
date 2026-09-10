@@ -31,5 +31,6 @@ public sealed record PostDetailResponse(
     string? UrgencyLevel,
     string? AiTriageReason,
     bool IsUrgencyManuallyOverridden,
-    LifestyleExpectationsResponse? Expectations = null
+    LifestyleExpectationsResponse? Expectations = null,
+    bool IsAuthorVerified = false
 );

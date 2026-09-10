@@ -16,7 +16,8 @@ public sealed record TransportOfferResponse(
     string? Message,
     DateTimeOffset ProposedPickupStart,
     string Status,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    bool IsTransporterVerified = false
 );
 
 public sealed record TransportTaskResponse(
@@ -40,7 +41,9 @@ public sealed record TransportTaskResponse(
     string Status,
     string? Notes,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<TransportOfferResponse> Offers
+    IReadOnlyList<TransportOfferResponse> Offers,
+    bool IsRequesterVerified = false,
+    bool IsTransporterVerified = false
 );
 
 public static class GetTransportTaskById
@@ -52,8 +55,12 @@ public static class GetTransportTaskById
     {
         var task = await db.TransportTasks.AsNoTracking()
             .Include(t => t.Requester)
-            .Include(t => t.Transporter)
-            .Include(t => t.Offers).ThenInclude(o => o.Transporter)
+                .ThenInclude(u => u.Roles)
+            .Include(t => t.Transporter!)
+                .ThenInclude(u => u.Roles)
+            .Include(t => t.Offers)
+                .ThenInclude(o => o.Transporter)
+                    .ThenInclude(u => u.Roles)
             .FirstOrDefaultAsync(t => t.Id == taskId, ct);
 
         if (task == null) return null;
@@ -66,7 +73,8 @@ public static class GetTransportTaskById
             o.Message,
             o.ProposedPickupStart,
             o.Status.ToString(),
-            o.CreatedAt
+            o.CreatedAt,
+            o.Transporter.Roles.Any(r => r.IsVerified)
         )).ToList();
 
         return new TransportTaskResponse(
@@ -90,7 +98,9 @@ public static class GetTransportTaskById
             task.Status.ToString(),
             task.Notes,
             task.CreatedAt,
-            offers
+            offers,
+            task.Requester.Roles.Any(r => r.IsVerified),
+            task.Transporter != null && task.Transporter.Roles.Any(r => r.IsVerified)
         );
     }
 }

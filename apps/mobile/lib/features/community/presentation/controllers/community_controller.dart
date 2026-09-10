@@ -66,7 +66,7 @@ class CommunityController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _posts = await _repository.searchPosts(query);
+      _posts = await _repository.searchPosts(query: query);
       _state = CommunityState.success;
       notifyListeners();
     } catch (e) {

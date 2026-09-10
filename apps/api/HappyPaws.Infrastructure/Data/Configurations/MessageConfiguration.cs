@@ -22,5 +22,7 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
             .WithMany()
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(m => !m.IsDeleted && !m.Sender.IsDeleted);
     }
 }
