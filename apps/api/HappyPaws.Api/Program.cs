@@ -42,6 +42,10 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// Avoid database migrations, background preflight checks, and strict CORS validation during design-time tooling or build-time OpenAPI document generation
+var isDocumentGeneration = (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name?.Contains("GetDocument", StringComparison.OrdinalIgnoreCase) ?? false)
+    || Microsoft.EntityFrameworkCore.EF.IsDesignTime;
+
 var configuredOrigins = builder.Configuration.GetValue<string>("Cors:AllowedOrigins");
 
 string[] allowedOrigins;
@@ -51,7 +55,7 @@ if (!string.IsNullOrWhiteSpace(configuredOrigins))
         ',',
         StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
-else if (builder.Environment.IsDevelopment())
+else if (builder.Environment.IsDevelopment() || isDocumentGeneration)
 {
     allowedOrigins = ["http://localhost:3000"];
 }
@@ -84,10 +88,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
-
-// Avoid database migrations and admin account seeding during design-time tooling or build-time OpenAPI document generation
-var isDocumentGeneration = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider"
-    || Microsoft.EntityFrameworkCore.EF.IsDesignTime;
 
 if (!isDocumentGeneration)
 {
