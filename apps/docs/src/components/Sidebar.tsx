@@ -6,7 +6,8 @@ import { ROLE_CATEGORIES, USER_STORIES } from "@/data/userStories";
 import { allApiOperations, getMethodBadgeClasses } from "@/data/openApiUtils";
 import { API_TOPICS } from "@/data/apiTopics";
 import { IconMap } from "@/components/Icons";
-import { LayoutDashboard, Users, ChevronDown, Code2, Layers } from "lucide-react";
+import { LayoutDashboard, Users, ChevronDown, Code2, Layers, Clock } from "lucide-react";
+import { getStoryStatus } from "@/data/featureGuides";
 
 export function Sidebar() {
   const location = useLocation();
@@ -246,12 +247,13 @@ export function Sidebar() {
                       const isStorySelected = currentStoryId === s.id;
                       const isMobile = s.platform.includes("Mobile");
                       const isWeb = s.platform.includes("Web");
+                      const { isPending, reason } = getStoryStatus(s);
 
                       return (
                         <Link
                           key={s.id}
                           to={`/stories/${cat.id}/${s.id}`}
-                          className="relative px-3.5 py-2.5 rounded-xl flex items-center justify-between gap-3 text-[13px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-teal-500 group"
+                          className="relative px-3.5 py-2.5 rounded-xl flex items-center justify-between gap-2.5 text-[13px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-teal-500 group"
                         >
                           {isStorySelected && (
                             <motion.div
@@ -272,17 +274,29 @@ export function Sidebar() {
                             {s.functionality}
                           </span>
 
-                          <span
-                            className={`relative z-10 text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold shrink-0 transition-colors ${
-                              isWeb
-                                ? "bg-blue-50 text-blue-700 border border-blue-100"
-                                : isMobile
-                                ? "bg-amber-50 text-amber-700 border border-amber-100"
-                                : "bg-purple-50 text-purple-700 border border-purple-100"
-                            }`}
-                          >
-                            {s.platform.split(" ")[0]}
-                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                            {isPending && (
+                              <span
+                                title={reason}
+                                aria-label={reason}
+                                className="text-amber-500/90 group-hover:text-amber-600 transition-colors flex items-center"
+                              >
+                                <Clock className="w-3.5 h-3.5" />
+                              </span>
+                            )}
+
+                            <span
+                              className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold shrink-0 transition-colors ${
+                                isWeb
+                                  ? "bg-blue-50 text-blue-700 border border-blue-100"
+                                  : isMobile
+                                  ? "bg-amber-50 text-amber-700 border border-amber-100"
+                                  : "bg-purple-50 text-purple-700 border border-purple-100"
+                              }`}
+                            >
+                              {s.platform.split(" ")[0]}
+                            </span>
+                          </div>
                         </Link>
                       );
                     })}

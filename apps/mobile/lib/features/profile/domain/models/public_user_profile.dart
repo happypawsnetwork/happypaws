@@ -16,6 +16,7 @@ class PublicUserProfile {
   final DateTime createdAt;
   final List<Post> posts;
   final bool canMessage;
+  final bool isVerified;
 
   const PublicUserProfile({
     required this.id,
@@ -28,6 +29,7 @@ class PublicUserProfile {
     required this.createdAt,
     required this.posts,
     this.canMessage = true,
+    this.isVerified = false,
   });
 
   factory PublicUserProfile.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class PublicUserProfile {
           : DateTime.now(),
       posts: parsedPosts,
       canMessage: json['canMessage'] as bool? ?? true,
+      isVerified: json['isVerified'] as bool? ?? false,
     );
   }
 }

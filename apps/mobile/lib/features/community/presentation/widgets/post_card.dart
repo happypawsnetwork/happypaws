@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../domain/models/post.dart';
 import 'post_type_pill.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -316,13 +317,21 @@ class PostCard extends StatelessWidget {
                   children: [
                     _buildAvatar(),
                     const SizedBox(width: 8),
-                    Text(
-                      post.authorDisplayName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: AppColors.textPrimary,
+                    Flexible(
+                      child: Text(
+                        post.authorDisplayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
+                    if (post.isAuthorVerified) ...[
+                      const SizedBox(width: 4),
+                      const VerifiedBadge(size: 14),
+                    ],
                     const Spacer(),
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,

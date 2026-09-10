@@ -19,6 +19,7 @@ public static class GetAdminSponsorships
     {
         var query = db.Posts.AsNoTracking()
             .Include(p => p.Author)
+                .ThenInclude(u => u.Roles)
             .Include(p => p.Media)
             .Include(p => p.ParentPost)
             .Include(p => p.SponsorshipDetails)
@@ -61,7 +62,8 @@ public static class GetAdminSponsorships
             p.CreatedAt,
             p.UrgencyLevel?.ToString(),
             p.AiTriageReason,
-            p.IsUrgencyManuallyOverridden
+            p.IsUrgencyManuallyOverridden,
+            IsAuthorVerified: p.Author.Roles.Any(r => r.IsVerified)
         )).ToList();
     }
 }

@@ -23,5 +23,7 @@ public class ChatParticipantConfiguration : IEntityTypeConfiguration<ChatPartici
 
         builder.Property(p => p.ClearedAt)
             .HasColumnName("cleared_at");
+
+        builder.HasQueryFilter(p => !p.User.IsDeleted);
     }
 }

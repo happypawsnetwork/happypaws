@@ -22,7 +22,20 @@ abstract interface class IPostRepository {
     String? type,
   });
   Future<Post?> getPostById(String id);
-  Future<List<Post>> searchPosts(String query);
+  Future<List<Post>> searchPosts({
+    String? query,
+    String? species,
+    String? location,
+    String? urgency,
+    String? type,
+    double? lat,
+    double? lon,
+    double? radiusKm,
+    String sort = 'newest',
+    String? cursorId,
+    DateTime? cursorDate,
+    int pageSize = 20,
+  });
   Future<List<Post>> getMyPosts({String? cursorId, DateTime? cursorDate});
   Future<List<Map<String, dynamic>>> getMyRescues();
   Future<Post> createPost(Map<String, dynamic> data);

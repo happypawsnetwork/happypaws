@@ -23,6 +23,7 @@ import 'features/community/data/repositories/post_repository.dart';
 import 'features/community/domain/repositories/i_post_repository.dart';
 import 'features/community/presentation/controllers/community_controller.dart';
 import 'features/community/presentation/controllers/create_post_controller.dart';
+import 'features/community/presentation/controllers/search_feed_controller.dart';
 import 'features/messaging/presentation/controllers/chat_controller.dart';
 
 void main() async {
@@ -68,6 +69,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => CreatePostController(postRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SearchFeedController(postRepository),
         ),
         ChangeNotifierProvider(create: (_) => ChatController()),
       ],

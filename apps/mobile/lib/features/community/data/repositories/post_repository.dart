@@ -87,6 +87,7 @@ class PostRepository implements IPostRepository {
       isUrgencyManuallyOverridden:
           json['isUrgencyManuallyOverridden'] as bool? ?? false,
       isRecommended: json['isRecommended'] as bool? ?? false,
+      isAuthorVerified: json['isAuthorVerified'] as bool? ?? false,
       expectations: json['expectations'] != null
           ? LifestyleExpectations.fromJson(
               json['expectations'] as Map<String, dynamic>,
@@ -198,14 +199,66 @@ class PostRepository implements IPostRepository {
   }
 
   @override
-  Future<List<Post>> searchPosts(String query) async {
+  Future<List<Post>> searchPosts({
+    String? query,
+    String? species,
+    String? location,
+    String? urgency,
+    String? type,
+    double? lat,
+    double? lon,
+    double? radiusKm,
+    String sort = 'newest',
+    String? cursorId,
+    DateTime? cursorDate,
+    int pageSize = 20,
+  }) async {
+    final queryParams = <String, String>{
+      'sort': sort,
+      'pageSize': pageSize.toString(),
+    };
+    if (query != null && query.trim().isNotEmpty) {
+      queryParams['q'] = query.trim();
+    }
+    if (species != null &&
+        species.trim().isNotEmpty &&
+        species.toLowerCase() != 'all') {
+      queryParams['species'] = species.trim();
+    }
+    if (location != null &&
+        location.trim().isNotEmpty &&
+        location.toLowerCase() != 'all') {
+      queryParams['location'] = location.trim();
+    }
+    if (urgency != null &&
+        urgency.trim().isNotEmpty &&
+        urgency.toLowerCase() != 'all') {
+      queryParams['urgency'] = urgency.trim();
+    }
+    if (type != null && type.trim().isNotEmpty && type.toLowerCase() != 'all') {
+      queryParams['type'] = type.trim();
+    }
+    if (lat != null && lon != null) {
+      queryParams['lat'] = lat.toString();
+      queryParams['lon'] = lon.toString();
+      if (radiusKm != null) {
+        queryParams['radiusKm'] = radiusKm.toString();
+      }
+    }
+    if (cursorId != null) queryParams['cursorId'] = cursorId;
+    if (cursorDate != null) {
+      queryParams['cursorDate'] = cursorDate.toIso8601String();
+    }
+
     final response = await _apiClient.get(
-      '/api/v1/community/search?q=${Uri.encodeComponent(query)}',
+      '/api/v1/community/search?${Uri(queryParameters: queryParams).query}',
     );
     final items = (response is List)
         ? response
         : (response?['items'] as List<dynamic>? ?? []);
-    return items.map((json) => _mapDtoToPost(json)).toList();
+    return items
+        .map((json) => _mapDtoToPost(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override

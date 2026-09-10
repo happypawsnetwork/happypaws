@@ -22,5 +22,7 @@ public class CanMessageConfiguration : IEntityTypeConfiguration<CanMessage>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(c => new { c.FromUserId, c.ToUserId }).IsUnique();
+
+        builder.HasQueryFilter(c => !c.FromUser.IsDeleted && !c.ToUser.IsDeleted);
     }
 }

@@ -1016,7 +1016,7 @@ public sealed class ProfileEndpoints : IEndpointGroup
             p.UrgencyLevel != null ? p.UrgencyLevel.ToString() : null,
             p.AiTriageReason,
             p.IsUrgencyManuallyOverridden,
-            false
+            user.Roles.Any(r => r.IsVerified)
         )).ToList();
 
         var response = new PublicUserProfileResponse(
@@ -1029,7 +1029,8 @@ public sealed class ProfileEndpoints : IEndpointGroup
             visibleRoles,
             user.CreatedAt,
             publicPosts,
-            canMessage
+            canMessage,
+            user.Roles.Any(r => r.IsVerified)
         );
 
         return TypedResults.Ok(response);
@@ -1159,5 +1160,6 @@ public sealed record PublicUserProfileResponse(
     IReadOnlyList<string> Roles,
     DateTimeOffset CreatedAt,
     IReadOnlyList<PostSummaryResponse> Posts,
-    bool CanMessage = true);
+    bool CanMessage = true,
+    bool IsVerified = false);
 

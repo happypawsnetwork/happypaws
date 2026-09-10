@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 import '../../../community/presentation/widgets/post_card.dart';
 import '../../domain/models/public_user_profile.dart';
 import '../../domain/repositories/i_profile_repository.dart';
@@ -158,13 +159,25 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             : null,
                       ),
                       const SizedBox(height: 14),
-                      Text(
-                        profile.fullName,
-                        style: GoogleFonts.outfit(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              profile.fullName,
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          if (profile.isVerified) ...[
+                            const SizedBox(width: 6),
+                            const VerifiedBadge(size: 20),
+                          ],
+                        ],
                       ),
                       if (profile.username != null &&
                           profile.username!.isNotEmpty) ...[

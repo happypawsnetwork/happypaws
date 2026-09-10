@@ -66,7 +66,20 @@ class _FakePostRepository implements IPostRepository {
   Future<Post?> getPostById(String id) async => null;
 
   @override
-  Future<List<Post>> searchPosts(String query) async => [];
+  Future<List<Post>> searchPosts({
+    String? query,
+    String? species,
+    String? location,
+    String? urgency,
+    String? type,
+    double? lat,
+    double? lon,
+    double? radiusKm,
+    String sort = 'newest',
+    String? cursorId,
+    DateTime? cursorDate,
+    int pageSize = 20,
+  }) async => [];
 
   @override
   Future<({bool isLiked, int likeCount})> toggleLike(String postId) async {

@@ -35,4 +35,4 @@ This document specifies the authentication constraints and role-based access for
 - ✅ The API creates an initial administrator account on boot if no admin exists in the system. The system emails these credentials via Resend and prints them to the console logs.
 
 ## Seed Development Accounts
-- ✅ In development mode only, the API seeds five verified test accounts (`adopter@`, `foster@`, `transporter@`, `vet@`, and `sponsor@happypawsnetwork.com`) with default password 123.
+- ✅ In development mode only, the API seeds five test accounts (`adopter@` as unverified, and `foster@`, `transporter@`, `vet@`, and `sponsor@happypawsnetwork.com` as verified) with default password 123.

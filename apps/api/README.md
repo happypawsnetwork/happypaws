@@ -21,7 +21,7 @@ The backend for Happy Paws, built with ASP.NET Core 10 using Clean Architecture.
    - **Upload email logo**: Place `logo.png` inside the `brand/` path of the `happypaws-public` bucket (key: `brand/logo.png`). The email layout template references `{{ CdnBaseUrl }}/brand/logo.png` to display the header logo.
 
 3. **Database migrations and API documentation**
-   - **Database migrations**: The API automatically applies pending Entity Framework Core migrations and seeds initial data every time it starts. In development mode, it seeds five verified test accounts (`adopter@`, `foster@`, `transporter@`, `vet@`, and `sponsor@happypawsnetwork.com`) with password `123`.
+   - **Database migrations**: The API automatically applies pending Entity Framework Core migrations and seeds initial data every time it starts. In development mode, it seeds five test accounts (`adopter@` as unverified, and `foster@`, `transporter@`, `vet@`, and `sponsor@happypawsnetwork.com` as verified) with password `123`.
    - **API documentation**: Set `ENABLE_API_DOCS=true` in your `.env` file to enable OpenAPI endpoint generation and the Scalar API reference UI at `/scalar/v1`.
 
 4. **Run the application**

@@ -29,6 +29,7 @@ public static class GetNearbyFeed
 
         var query = db.Posts.AsNoTracking()
             .Include(p => p.Author)
+                .ThenInclude(u => u.Roles)
             .Include(p => p.Media)
             .Where(p => !p.IsDeleted && p.LocationPoint != null)
             .Where(p => p.LocationPoint!.IsWithinDistance(searchPoint, radiusMetres))
@@ -82,7 +83,8 @@ public static class GetNearbyFeed
             p.UrgencyLevel?.ToString(),
             p.AiTriageReason,
             p.IsUrgencyManuallyOverridden,
-            false
+            false,
+            p.Author.Roles.Any(r => r.IsVerified)
         )).ToList();
     }
 }

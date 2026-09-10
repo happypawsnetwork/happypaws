@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/services/location_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/chat_controller.dart';
 import '../../data/models/message.dart';
@@ -15,6 +16,7 @@ class ChatThreadScreen extends StatefulWidget {
   final String targetName;
   final String? targetAvatarUrl;
   final bool isSelf;
+  final bool isTargetVerified;
 
   const ChatThreadScreen({
     super.key,
@@ -23,6 +25,7 @@ class ChatThreadScreen extends StatefulWidget {
     required this.targetName,
     this.targetAvatarUrl,
     this.isSelf = false,
+    this.isTargetVerified = false,
   });
 
   @override
@@ -502,15 +505,26 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.targetName,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.targetName,
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (widget.isTargetVerified) ...[
+                        const SizedBox(width: 4),
+                        const VerifiedBadge(size: 16),
+                      ],
+                    ],
                   ),
                   Text(
                     widget.isSelf ? 'Saved Messages' : 'Direct Message',

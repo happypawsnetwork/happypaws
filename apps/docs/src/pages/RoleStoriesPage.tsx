@@ -9,10 +9,12 @@ import {
   Smartphone,
   Globe,
   Compass,
-  ExternalLink
+  ExternalLink,
+  Clock,
+  CheckCircle2
 } from "lucide-react";
 import { FeatureGuide } from "@/components/FeatureGuide";
-import { getFeatureGuide } from "@/data/featureGuides";
+import { getFeatureGuide, getStoryStatus } from "@/data/featureGuides";
 
 export function RoleStoriesPage() {
   const { roleId, storyId } = useParams();
@@ -21,6 +23,7 @@ export function RoleStoriesPage() {
 
   // Active story selection
   const activeStory = stories.find((s) => s.id === storyId) || stories[0];
+  const activeStoryStatus = getStoryStatus(activeStory);
   const [activeTab, setActiveTab] = useState<"overview" | "guide">("overview");
 
   const tabs = [
@@ -99,6 +102,24 @@ export function RoleStoriesPage() {
                   <span className="text-xs font-medium text-slate-600">
                     {activeStory.platform}
                   </span>
+                  <span className="text-xs font-medium text-slate-400">•</span>
+                  {activeStoryStatus.isPending ? (
+                    <span
+                      title={activeStoryStatus.reason}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80"
+                    >
+                      <Clock className="w-3 h-3 text-amber-600" />
+                      Pending
+                    </span>
+                  ) : (
+                    <span
+                      title="Story overview and feature guide ready"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80"
+                    >
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      Ready
+                    </span>
+                  )}
                 </div>
               </div>
 

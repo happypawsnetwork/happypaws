@@ -460,7 +460,7 @@ export const USER_STORIES: UserStory[] = [
     "screenshots": [
       {
         "caption": "Role assignment view on Mobile (Flutter)",
-        "placeholder": "/screenshots/adopter/adopter-02-main.png"
+        "placeholder": "/screenshots/adopter/adopter-02/step-01-profile-menu.png"
       }
     ]
   },
@@ -485,7 +485,7 @@ export const USER_STORIES: UserStory[] = [
     "screenshots": [
       {
         "caption": "Login and authentication view on Cross-platform",
-        "placeholder": "/screenshots/adopter/adopter-03-main.png"
+        "placeholder": "/screenshots/adopter/adopter-03/step-01-welcome-screen.png"
       }
     ]
   },
@@ -510,7 +510,7 @@ export const USER_STORIES: UserStory[] = [
     "screenshots": [
       {
         "caption": "Identity verification (KYC) view on Mobile (Flutter)",
-        "placeholder": "/screenshots/adopter/adopter-04-main.png"
+        "placeholder": "/screenshots/adopter/adopter-04/step-01-profile-menu.png"
       }
     ]
   },
@@ -534,7 +534,7 @@ export const USER_STORIES: UserStory[] = [
     "screenshots": [
       {
         "caption": "Lifestyle profile and matching view on Mobile (Flutter)",
-        "placeholder": "/screenshots/adopter/adopter-05-main.png"
+        "placeholder": "/screenshots/adopter/adopter-05/step-01-profile-menu.png"
       }
     ]
   },
@@ -546,20 +546,39 @@ export const USER_STORIES: UserStory[] = [
     "description": "Searches and filters listed animals by species, location, and urgency, independent of any suggestion the matching engine has already made.",
     "platform": "Mobile (Flutter)",
     "demoSteps": [
-      "Navigate to Browse and search adoption listings on Mobile (Flutter).",
-      "Demonstrate browse and search adoption listings.",
-      "Verify: Searches and filters listed animals by species, location, and urgency, independent of any suggestion the matching engine has already made."
+      "Open the search screen from the top navigation bar to access the animal discovery hub.",
+      "Type a keyword query into the search bar to find matching animals by name, species, description, or location with debounced execution.",
+      "Select quick filter chips or open the multi-criteria filter modal to filter by species, urgency level, and listing type.",
+      "Apply filters and inspect matching animal listings, verifying that browsing operates independent of lifestyle profile suggestions.",
+      "Test clearing and dismissing active filters to verify instant search state recovery."
     ],
-    "vivaInsight": "Explain how browse and search adoption listings operates within Clean Architecture and enforces role claims.",
+    "vivaInsight": "Search operates independently of the lifestyle matching engine to give adopters unconstrained discovery. The backend uses EF Core queries with case-insensitive matching across post content, species, location, urgency enums, and spatial distance checks. Results carry an informational recommendation flag calculated against the user's lifestyle profile, while the mobile client isolates search state inside a dedicated controller to avoid mutating the primary community feed.",
     "endpoints": [
+      "GET /api/v1/community/search",
+      "GET /api/v1/community/posts/search",
       "GET /api/v1/community/posts",
-      "GET /api/v1/community/posts/nearby",
-      "GET /api/v1/community/posts/map-bounds"
+      "GET /api/v1/community/posts/nearby"
     ],
     "screenshots": [
       {
-        "caption": "Browse and search adoption listings view on Mobile (Flutter)",
-        "placeholder": "/screenshots/adopter/adopter-06-main.png"
+        "caption": "Search exploration landing view with quick filter chips and suggestion cards",
+        "placeholder": "/screenshots/adopter/adopter-06/step-01-search-explore.png"
+      },
+      {
+        "caption": "Real-time debounced keyword search across animal names, breeds, and descriptions",
+        "placeholder": "/screenshots/adopter/adopter-06/step-02-keyword-search.png"
+      },
+      {
+        "caption": "Multi-criteria filter modal for species, listing type, urgency level, and location",
+        "placeholder": "/screenshots/adopter/adopter-06/step-03-filter-modal-options.png"
+      },
+      {
+        "caption": "Filtered animal listings independent of lifestyle profile suggestions with active filter tags",
+        "placeholder": "/screenshots/adopter/adopter-06/step-04-filtered-results-independent.png"
+      },
+      {
+        "caption": "Friendly empty state when no animals match with quick filter reset action",
+        "placeholder": "/screenshots/adopter/adopter-06/step-05-empty-state-reset.png"
       }
     ]
   },

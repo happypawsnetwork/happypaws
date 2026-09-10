@@ -91,7 +91,8 @@ public sealed class MessagingEndpoints : IEndpointGroup
                         p.User.LastName,
                         p.User.AvatarUrl,
                         p.User.Email,
-                        IsSelf = t.Participants.Count == 1 && p.UserId == userId
+                        IsSelf = t.Participants.Count == 1 && p.UserId == userId,
+                        IsVerified = p.User.Roles.Any(r => r.IsVerified)
                     })
                     .FirstOrDefault(),
                 LastMessage = t.Messages

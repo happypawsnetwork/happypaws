@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 import '../controllers/profile_controller.dart';
 import '../../domain/models/user_profile.dart';
 
@@ -257,15 +258,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    user.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E293B),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          user.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        ),
+                      ),
+                      if (user.isVerified) ...[
+                        const SizedBox(width: 6),
+                        const VerifiedBadge(size: 22),
+                      ],
+                    ],
                   ),
                   if (user.tagline != null && user.tagline!.isNotEmpty) ...[
                     const SizedBox(height: 4),

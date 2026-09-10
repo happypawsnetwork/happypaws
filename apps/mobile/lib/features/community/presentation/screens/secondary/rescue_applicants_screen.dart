@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../../core/network/api_client.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/verified_badge.dart';
 
 class RescueApplicantsScreen extends StatefulWidget {
   const RescueApplicantsScreen({super.key});
@@ -87,6 +88,7 @@ class _RescueApplicantsScreenState extends State<RescueApplicantsScreen> {
                 final role = item['role'] ?? 'Applicant';
                 final avatarUrl = item['avatarUrl'] as String?;
                 final status = item['status'] as String?;
+                final isVerified = item['isVerified'] as bool? ?? false;
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -107,12 +109,22 @@ class _RescueApplicantsScreenState extends State<RescueApplicantsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                name,
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      name,
+                                      style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isVerified) ...[
+                                    const SizedBox(width: 4),
+                                    const VerifiedBadge(size: 14),
+                                  ],
+                                ],
                               ),
                               const SizedBox(height: 4),
                               Container(

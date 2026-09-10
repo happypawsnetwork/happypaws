@@ -17,7 +17,8 @@ public sealed record RescueApplicantResponse(
     string ExperienceSummary,
     bool HasVehicle,
     string Status,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    bool IsVerified = false
 );
 
 public static class GetRescueApplicants
@@ -34,6 +35,7 @@ public static class GetRescueApplicants
 
         var apps = await db.RescueApplications
             .Include(a => a.Applicant)
+                .ThenInclude(u => u.Roles)
             .Where(a => a.RescuePostId == postId)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(ct);
@@ -47,7 +49,8 @@ public static class GetRescueApplicants
             a.ExperienceSummary ?? string.Empty,
             a.HasVehicle,
             a.Status.ToString(),
-            a.CreatedAt
+            a.CreatedAt,
+            a.Applicant.Roles.Any(r => r.IsVerified)
         )).ToList();
     }
 }

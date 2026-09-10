@@ -125,13 +125,13 @@ public static class DatabaseExtensions
         string domain,
         ILogger logger)
     {
-        var devAccounts = new (RoleName Role, string Prefix, string Username, string FirstName, string LastName, string Tagline)[]
+        var devAccounts = new (RoleName Role, string Prefix, string Username, string FirstName, string LastName, string Tagline, bool IsVerified)[]
         {
-            (RoleName.Adopter, "adopter", "adopter", "Adopter", "User", "Development test adopter account"),
-            (RoleName.Foster, "foster", "foster", "Foster", "User", "Development test foster account"),
-            (RoleName.Transporter, "transporter", "transporter", "Transporter", "User", "Development test transporter account"),
-            (RoleName.Veterinarian, "vet", "vet", "Veterinarian", "User", "Development test veterinarian account"),
-            (RoleName.Sponsor, "sponsor", "sponsor", "Sponsor", "User", "Development test sponsor account")
+            (RoleName.Adopter, "adopter", "adopter", "Adopter", "User", "Development test adopter account", false),
+            (RoleName.Foster, "foster", "foster", "Foster", "User", "Development test foster account", true),
+            (RoleName.Transporter, "transporter", "transporter", "Transporter", "User", "Development test transporter account", true),
+            (RoleName.Veterinarian, "vet", "vet", "Veterinarian", "User", "Development test veterinarian account", true),
+            (RoleName.Sponsor, "sponsor", "sponsor", "Sponsor", "User", "Development test sponsor account", true)
         };
 
         var passwordHasher = new PasswordHasher<User>();
@@ -141,10 +141,13 @@ public static class DatabaseExtensions
         {
             var email = $"{account.Prefix}@{domain}".ToLowerInvariant();
 
-            var exists = await context.Users.AnyAsync(u => u.Email == email || u.Username == account.Username);
-            if (!exists)
+            var user = await context.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Email == email || u.Username == account.Username);
+
+            if (user == null)
             {
-                var user = new User
+                var newUser = new User
                 {
                     Email = email,
                     Username = account.Username,
@@ -156,19 +159,35 @@ public static class DatabaseExtensions
                     IsDeleted = false
                 };
 
-                user.PasswordHash = passwordHasher.HashPassword(user, "123");
-                user.AddRole(account.Role, isVerified: true);
+                newUser.PasswordHash = passwordHasher.HashPassword(newUser, "123");
+                newUser.AddRole(account.Role, isVerified: account.IsVerified);
 
-                context.Users.Add(user);
+                context.Users.Add(newUser);
                 anyAdded = true;
-                logger.LogInformation("[Database] Seeding development account {Email} for role {Role}", email, account.Role);
+                logger.LogInformation("[Database] Seeding development account {Email} for role {Role} (Verified: {IsVerified})", email, account.Role, account.IsVerified);
+            }
+            else
+            {
+                var role = user.Roles.FirstOrDefault(r => r.RoleName == account.Role);
+                if (role == null)
+                {
+                    user.AddRole(account.Role, isVerified: account.IsVerified);
+                    anyAdded = true;
+                    logger.LogInformation("[Database] Adding missing role {Role} to development account {Email} (Verified: {IsVerified})", account.Role, email, account.IsVerified);
+                }
+                else if (role.IsVerified != account.IsVerified)
+                {
+                    role.IsVerified = account.IsVerified;
+                    anyAdded = true;
+                    logger.LogInformation("[Database] Updating development account {Email} role {Role} verification status to {IsVerified}", email, account.Role, account.IsVerified);
+                }
             }
         }
 
         if (anyAdded)
         {
             await context.SaveChangesAsync();
-            logger.LogInformation("[Database] Development seed accounts created successfully.");
+            logger.LogInformation("[Database] Development seed accounts processed successfully.");
         }
     }
 

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/chat_controller.dart';
 import '../../data/models/chat_thread.dart';
@@ -320,6 +321,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   targetName: displayName,
                                   targetAvatarUrl: other.avatarUrl,
                                   isSelf: isSelf,
+                                  isTargetVerified: other.isVerified,
                                 ),
                               ),
                             );
@@ -361,19 +363,34 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            displayName,
-                                            style: GoogleFonts.outfit(
-                                              fontSize: 16,
-                                              fontWeight:
-                                                  (thread.unreadCount > 0 &&
-                                                      !isSelf)
-                                                  ? FontWeight.w700
-                                                  : FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  displayName,
+                                                  style: GoogleFonts.outfit(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        (thread.unreadCount >
+                                                                0 &&
+                                                            !isSelf)
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w600,
+                                                    color:
+                                                        AppColors.textPrimary,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (other?.isVerified ==
+                                                  true) ...[
+                                                const SizedBox(width: 4),
+                                                const VerifiedBadge(size: 15),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                         if (thread.lastMessage != null)

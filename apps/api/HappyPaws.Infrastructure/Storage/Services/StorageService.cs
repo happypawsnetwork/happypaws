@@ -52,7 +52,7 @@ public sealed class StorageService : IStorageService
             Key = key,
             InputStream = content,
             ContentType = contentType,
-            DisablePayloadSigning = true
+            DisablePayloadSigning = _options.ShouldDisablePayloadSigning
         };
 
         await _s3Client.PutObjectAsync(request, cancellationToken);
@@ -90,7 +90,7 @@ public sealed class StorageService : IStorageService
             Key = key,
             InputStream = content,
             ContentType = contentType,
-            DisablePayloadSigning = true
+            DisablePayloadSigning = _options.ShouldDisablePayloadSigning
         };
 
         await _s3Client.PutObjectAsync(request, cancellationToken);

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verified_badge.dart';
 import '../../domain/models/post.dart';
 import '../../domain/repositories/i_post_repository.dart';
 import '../controllers/community_controller.dart';
@@ -449,13 +450,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    post.authorDisplayName,
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          post.authorDisplayName,
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      if (post.isAuthorVerified) ...[
+                                        const SizedBox(width: 4),
+                                        const VerifiedBadge(size: 16),
+                                      ],
+                                    ],
                                   ),
                                   if (post.authorTagline != null &&
                                       post.authorTagline!.isNotEmpty) ...[

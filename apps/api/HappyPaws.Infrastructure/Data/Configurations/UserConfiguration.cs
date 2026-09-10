@@ -157,5 +157,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Metadata
             .FindNavigation(nameof(User.Devices))!
             .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasMany(u => u.Badges)
+            .WithOne(b => b.User)
+            .HasForeignKey(b => b.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Metadata
+            .FindNavigation(nameof(User.Badges))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

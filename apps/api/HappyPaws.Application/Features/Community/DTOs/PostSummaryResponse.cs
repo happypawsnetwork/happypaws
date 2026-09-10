@@ -24,5 +24,6 @@ public sealed record PostSummaryResponse(
     string? UrgencyLevel,
     string? AiTriageReason,
     bool IsUrgencyManuallyOverridden,
-    bool IsRecommended
+    bool IsRecommended,
+    bool IsAuthorVerified = false
 );
