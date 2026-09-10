@@ -27,9 +27,9 @@ jobs:
     name: Detect Changed Services
     runs-on: ubuntu-latest
     outputs:
-      api: ${{ steps.filter.outputs.api }}
-      web: ${{ steps.filter.outputs.web }}
-      mobile: ${{ steps.filter.outputs.mobile }}
+      api: ${{ steps.base.outputs.is_shallow == 'true' || steps.filter.outputs.api }}
+      web: ${{ steps.base.outputs.is_shallow == 'true' || steps.filter.outputs.web }}
+      mobile: ${{ steps.base.outputs.is_shallow == 'true' || steps.filter.outputs.mobile }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,11 +37,23 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 2
 
+      - name: Determine base commit
+        id: base
+        run: |
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            echo "sha=$(git rev-parse HEAD~1)" >> "$GITHUB_OUTPUT"
+            echo "is_shallow=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "is_shallow=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Detect changes
         uses: dorny/paths-filter@v3
         id: filter
+        if: steps.base.outputs.is_shallow != 'true'
         with:
-          base: ${{ github.event.workflow_run.head_sha || github.sha }}^
+          base: ${{ steps.base.outputs.sha }}
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           filters: |
             api:
